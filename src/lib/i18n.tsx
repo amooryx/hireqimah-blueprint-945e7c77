@@ -26,8 +26,8 @@ const translations: Record<string, Record<Lang, string>> = {
     ar: "اعرف مستواك…\nوابدأ طريقك المهني بثقة",
   },
   "hero.subtitle": {
-    en: "Build a strong profile, understand your job readiness, and get closer to internships and job opportunities in Saudi Arabia.",
-    ar: "ابنِ ملفك المهني، وقيّم جاهزيتك لسوق العمل، وقرّب نفسك من فرص التدريب والتوظيف داخل المملكة.",
+    en: "Build your professional profile, measure your job readiness, and compete with students from universities across Saudi Arabia for internship and employment opportunities.",
+    ar: "ابنِ ملفك المهني، وقيّم جاهزيتك لسوق العمل، وابدأ تنافس طلاب من مختلف جامعات المملكة على فرص التدريب والتوظيف.",
   },
   "hero.cta.start": { en: "Start Your Profile", ar: "ابدأ ملفك" },
   "hero.cta.rankings": { en: "View Rankings", ar: "استعرض الترتيب" },
@@ -38,30 +38,30 @@ const translations: Record<string, Record<Lang, string>> = {
   // For Students
   "students.title": { en: "For Students", ar: "للطلاب" },
   "students.desc": {
-    en: "Track your readiness, improve your skills, and stand out for internships and jobs.",
-    ar: "تابع جاهزيتك، وطوّر مهاراتك، وخلّك الخيار الأفضل لفرص التدريب والتوظيف.",
+    en: "Track your real level, work on developing your skills, and compete with students from different universities to reach internship and job opportunities faster.",
+    ar: "تابع مستواك الحقيقي، واشتغل على تطوير مهاراتك، ونافس طلاب من مختلف الجامعات عشان توصل لفرص التدريب والوظائف بشكل أسرع.",
   },
   "students.f1.title": { en: "Readiness Score", ar: "درجة الجاهزية" },
   "students.f1.desc": {
-    en: "See a clear score that shows how prepared you are for real job opportunities.",
-    ar: "شوف درجة واضحة تبيّن مدى استعدادك لفرص العمل الحقيقية.",
+    en: "See a clear evaluation of your actual readiness compared to today's job market demands.",
+    ar: "شوف تقييم واضح يوضح جاهزيتك الفعلية مقارنة بمتطلبات سوق العمل اليوم.",
   },
   "students.f2.title": { en: "Career Roadmap", ar: "خريطة المسار المهني" },
   "students.f2.desc": {
-    en: "Get personalized guidance on what skills and certifications to build next.",
-    ar: "احصل على توجيه مخصّص عن المهارات والشهادات اللي تحتاج تبنيها.",
+    en: "Get a clear roadmap showing exactly what you need to learn and develop to improve your chances in the job market.",
+    ar: "احصل على خريطة واضحة تبين لك بالضبط إيش تحتاج تتعلم وتطوّر عشان ترفع فرصك في سوق العمل.",
   },
   "students.f3.title": { en: "National Rankings", ar: "الترتيب الوطني" },
   "students.f3.desc": {
-    en: "Compare your readiness with peers across universities and majors.",
-    ar: "قارن جاهزيتك مع زملائك في مختلف الجامعات والتخصصات.",
+    en: "See your ranking among students across the Kingdom and start competing to reach the top.",
+    ar: "شوف ترتيبك بين طلاب المملكة، وابدأ تنافس بشكل حقيقي للوصول لأعلى المراتب.",
   },
 
   // For Employers
   "employers.title": { en: "For Employers", ar: "لأصحاب العمل" },
   "employers.desc": {
-    en: "Discover students who are actually ready to contribute from day one.",
-    ar: "اكتشف طلاب جاهزين فعليًا للعمل والمساهمة من أول يوم.",
+    en: "Discover students who are actually ready to contribute from day one — based on verified data and real evaluation, not just a CV.",
+    ar: "اكتشف طلاب جاهزين فعليًا للعمل والمساهمة من أول يوم.\nبناءً على بيانات موثوقة وتقييم حقيقي — مو مجرد سيرة ذاتية.",
   },
   "employers.f1.title": { en: "Verified Profiles", ar: "ملفات موثّقة" },
   "employers.f1.desc": {
@@ -82,8 +82,8 @@ const translations: Record<string, Record<Lang, string>> = {
   // For Universities
   "uni.title": { en: "For Universities", ar: "للجامعات" },
   "uni.desc": {
-    en: "Understand how your students are performing beyond grades.",
-    ar: "تابع مستوى جاهزية طلابك لسوق العمل بشكل عملي، بعيدًا عن الدرجات فقط.",
+    en: "Track your students' job readiness practically, and discover the gaps that need development before graduation.",
+    ar: "تابع مستوى جاهزية طلابك بشكل عملي، واكتشف الفجوات اللي تحتاج تطوير قبل التخرج.",
   },
   "uni.f1.title": { en: "Cohort Analytics", ar: "تحليلات الدُفعات" },
   "uni.f1.desc": {
@@ -104,8 +104,8 @@ const translations: Record<string, Record<Lang, string>> = {
   // ERS
   "ers.title": { en: "What is ERS?", ar: "ما هي درجة الجاهزية (ERS)؟" },
   "ers.desc": {
-    en: "ERS is a score that reflects how prepared you are for real job opportunities — based on your skills, certifications, and projects.",
-    ar: "درجة الجاهزية (ERS) تعكس مدى استعدادك الفعلي لسوق العمل بناءً على مهاراتك، وشهاداتك، ومشاريعك.",
+    en: "ERS reflects how prepared you are for real job opportunities — based on your skills, certifications, projects, and alignment with actual market demands.",
+    ar: "درجة الجاهزية (ERS) تعكس مدى استعدادك الفعلي لسوق العمل بناءً على مهاراتك، وشهاداتك، ومشاريعك.\nوتعتمد أيضًا على مدى توافقك مع المهارات المطلوبة فعليًا في سوق العمل.",
   },
   "ers.step1.title": { en: "Build Your Profile", ar: "ابنِ ملفك" },
   "ers.step1.desc": { en: "Upload your transcripts, certifications, and projects.", ar: "ارفع سجلاتك الأكاديمية وشهاداتك ومشاريعك." },
@@ -140,10 +140,10 @@ const translations: Record<string, Record<Lang, string>> = {
   },
 
   // Final CTA
-  "cta.title": { en: "Ready to Start?", ar: "مستعد تبدأ؟" },
+  "cta.title": { en: "Ready to Start Your Journey?", ar: "مستعد تبدأ رحلتك؟" },
   "cta.subtitle": {
-    en: "Create your profile and discover where you stand.",
-    ar: "أنشئ ملفك واكتشف وين مستواك.",
+    en: "Start now, know your level, and compete for internship and job opportunities across the Kingdom.",
+    ar: "ابدأ الآن، اعرف مستواك، وابدأ تنافس على فرص التدريب والوظائف في المملكة.",
   },
   "cta.already": { en: "Already have an account?", ar: "عندك حساب؟" },
 
