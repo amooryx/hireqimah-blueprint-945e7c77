@@ -4,6 +4,8 @@ import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { ThemeProvider } from "@/lib/theme";
+import { I18nProvider } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
 import Index from "./pages/Index";
@@ -125,56 +127,46 @@ const App = () => {
   if (!checked) return null;
 
   return (
-    <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <BrowserRouter>
-          <ScrollToHash />
-          <Navbar user={user} onLogout={handleLogout} />
-          <Routes>
-            {/* Homepage always accessible, even when logged in */}
-            <Route path="/" element={<Index />} />
-
-            {/* Role selection */}
-            <Route path="/auth/select-role" element={<RoleSelect />} />
-
-            {/* Legacy /login redirects to role selection */}
-            <Route path="/login" element={<Navigate to="/auth/select-role?mode=signin" />} />
-
-            {/* Role-specific login routes */}
-            <Route path="/login/student" element={user ? <Navigate to={`/${effectiveRole}`} /> : <RoleLogin role="student" onLogin={handleLogin} />} />
-            <Route path="/login/hr" element={user ? <Navigate to={`/${effectiveRole}`} /> : <RoleLogin role="hr" onLogin={handleLogin} />} />
-            <Route path="/login/university" element={user ? <Navigate to={`/${effectiveRole}`} /> : <RoleLogin role="university" onLogin={handleLogin} />} />
-
-            {/* Admin separate route */}
-            <Route path="/admin/login" element={user ? <Navigate to={`/${effectiveRole}`} /> : <RoleLogin role="admin" onLogin={handleLogin} />} />
-
-            {/* Sign up — always accessible, handles logged-in modal internally */}
-            <Route path="/signup" element={<SignUp currentUser={user} onLogout={handleLogout} />} />
-            <Route path="/forgot-password" element={<ForgotPassword />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-
-            {/* Protected dashboards with strict role checks */}
-            <Route path="/student" element={effectiveRole === "student" ? <StudentDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/login/student" />} />
-            <Route path="/hr" element={effectiveRole === "hr" ? <HRDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/login/hr" />} />
-            <Route path="/university" element={effectiveRole === "university" ? <UniversityDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/login/university" />} />
-            <Route path="/admin" element={effectiveRole === "admin" ? <AdminDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/admin/login" />} />
-
-            <Route path="/profile/:userId" element={<PublicProfile />} />
-            <Route path="/leaderboard" element={<PublicLeaderboard />} />
-            <Route path="/privacy" element={<Privacy />} />
-            <Route path="/terms" element={<Terms />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/founders" element={<Founders />} />
-            <Route path="/security" element={<SecurityStatement />} />
-            <Route path="/access-denied" element={<AccessDenied />} />
-            <Route path="*" element={<NotFound />} />
-          </Routes>
-        </BrowserRouter>
-      </TooltipProvider>
-    </QueryClientProvider>
+    <ThemeProvider>
+      <I18nProvider>
+        <QueryClientProvider client={queryClient}>
+          <TooltipProvider>
+            <Toaster />
+            <Sonner />
+            <BrowserRouter>
+              <ScrollToHash />
+              <Navbar user={user} onLogout={handleLogout} />
+              <Routes>
+                <Route path="/" element={<Index />} />
+                <Route path="/auth/select-role" element={<RoleSelect />} />
+                <Route path="/login" element={<Navigate to="/auth/select-role?mode=signin" />} />
+                <Route path="/login/student" element={user ? <Navigate to={`/${effectiveRole}`} /> : <RoleLogin role="student" onLogin={handleLogin} />} />
+                <Route path="/login/hr" element={user ? <Navigate to={`/${effectiveRole}`} /> : <RoleLogin role="hr" onLogin={handleLogin} />} />
+                <Route path="/login/university" element={user ? <Navigate to={`/${effectiveRole}`} /> : <RoleLogin role="university" onLogin={handleLogin} />} />
+                <Route path="/admin/login" element={user ? <Navigate to={`/${effectiveRole}`} /> : <RoleLogin role="admin" onLogin={handleLogin} />} />
+                <Route path="/signup" element={<SignUp currentUser={user} onLogout={handleLogout} />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
+                <Route path="/student" element={effectiveRole === "student" ? <StudentDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/login/student" />} />
+                <Route path="/hr" element={effectiveRole === "hr" ? <HRDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/login/hr" />} />
+                <Route path="/university" element={effectiveRole === "university" ? <UniversityDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/login/university" />} />
+                <Route path="/admin" element={effectiveRole === "admin" ? <AdminDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/admin/login" />} />
+                <Route path="/profile/:userId" element={<PublicProfile />} />
+                <Route path="/leaderboard" element={<PublicLeaderboard />} />
+                <Route path="/privacy" element={<Privacy />} />
+                <Route path="/terms" element={<Terms />} />
+                <Route path="/contact" element={<Contact />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/founders" element={<Founders />} />
+                <Route path="/security" element={<SecurityStatement />} />
+                <Route path="/access-denied" element={<AccessDenied />} />
+                <Route path="*" element={<NotFound />} />
+              </Routes>
+            </BrowserRouter>
+          </TooltipProvider>
+        </QueryClientProvider>
+      </I18nProvider>
+    </ThemeProvider>
   );
 };
 
