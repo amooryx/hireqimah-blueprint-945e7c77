@@ -105,7 +105,7 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
         .order("ers_score", { ascending: false })
         .limit(200),
       supabase.from("hr_shortlists").select("*").eq("hr_user_id", authUser.id),
-      supabase.from("majors_repository").select("name").order("name"),
+      supabase.from("student_profiles").select("major").order("major"),
       supabase.from("certification_catalog").select("id, name").order("name"),
       supabase.from("student_certifications").select("user_id, certification_id, certification_catalog(name)"),
       untypedTable("interview_requests").select("*").eq("hr_user_id", authUser.id).order("created_at", { ascending: false }),
@@ -118,7 +118,7 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
     setCandidates(students || []);
     setShortlists(sl || []);
     setPipeline(pipelineData || []);
-    setMajors([...new Set((majorsList || []).map((m: any) => m.name))]);
+    setMajors([...new Set((majorsList || []).map((m: any) => m.major).filter(Boolean))]);
     setCertNames([...new Set((certs || []).map((c: any) => c.name))]);
     setStudentCerts(sCerts || []);
     setInterviews(ivs || []);
