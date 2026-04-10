@@ -118,7 +118,7 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
     setCandidates(students || []);
     setShortlists(sl || []);
     setPipeline(pipelineData || []);
-    setMajors([...new Set((majorsList || []).map((m: any) => m.name))]);
+    setMajors([...new Set((majorsList || []).map((m: any) => m.major).filter(Boolean))]);
     setCertNames([...new Set((certs || []).map((c: any) => c.name))]);
     setStudentCerts(sCerts || []);
     setInterviews(ivs || []);
