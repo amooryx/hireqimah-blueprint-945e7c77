@@ -1,11 +1,11 @@
+import logo from "@/assets/logo.png";
+
 const Footer = () => (
   <footer className="border-t border-border bg-card py-12">
     <div className="container mx-auto px-4">
       <div className="flex flex-col md:flex-row items-center justify-between gap-6">
         <div>
-          <span className="text-lg font-bold text-primary font-display tracking-tight">
-            HireQimah
-          </span>
+          <img src={logo} alt="HireQimah" className="h-10 w-auto" />
           <p className="text-sm text-muted-foreground mt-1">
             Where Saudi Talent Builds Its Qimah.
           </p>
