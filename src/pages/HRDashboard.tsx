@@ -347,12 +347,19 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
         {/* Search */}
         <TabsContent value="search">
           <div className="rounded-xl border bg-card p-6">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-6">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Search by name..." className="pl-9" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} maxLength={100} />
               </div>
               <Input placeholder="Min ERS" type="number" min={0} max={100} value={minERS} onChange={e => setMinERS(e.target.value)} />
+              <Select value={filterUni} onValueChange={setFilterUni}>
+                <SelectTrigger><SelectValue placeholder="University" /></SelectTrigger>
+                <SelectContent className="max-h-60">
+                  <SelectItem value="all">All Universities</SelectItem>
+                  {SAUDI_UNIVERSITIES.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                </SelectContent>
+              </Select>
               <Select value={filterMajor} onValueChange={setFilterMajor}>
                 <SelectTrigger><SelectValue placeholder="Major" /></SelectTrigger>
                 <SelectContent className="max-h-60">
