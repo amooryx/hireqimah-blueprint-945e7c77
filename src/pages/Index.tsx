@@ -47,10 +47,10 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.4 }}
             >
               {t("hero.headline").split("\n").map((line, i) => (
-                <h1 key={i} className={`text-2xl md:text-4xl lg:text-[2.75rem] font-bold font-heading text-white leading-tight ${i > 0 ? "mt-2" : ""}`}>
-                  {line}
-                </h1>
-              ))}
+                 <h1 key={i} className={`text-2xl md:text-4xl lg:text-[2.75rem] font-bold font-heading text-white leading-tight ${i > 0 ? "mt-5" : ""}`}>
+                   {line}
+                 </h1>
+               ))}
             </motion.div>
 
             <motion.p
