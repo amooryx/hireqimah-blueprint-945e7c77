@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
 import { untypedTable } from "@/lib/untypedTable";
 import { useToast } from "@/hooks/use-toast";
+import { findCareerPath, generateRoadmapFromPath, getAllCareerNames } from "@/lib/careerRoadmapData";
 import {
   Map, Target, Award, Star, Briefcase, TrendingUp, TrendingDown,
   ArrowRight, Loader2, AlertTriangle, Rocket, Minus,
