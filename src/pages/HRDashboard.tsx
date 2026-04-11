@@ -13,9 +13,10 @@ import ERSGauge from "@/components/ERSGauge";
 import { supabase } from "@/integrations/supabase/client";
 import { untypedTable } from "@/lib/untypedTable";
 import type { AuthUser } from "@/lib/supabaseAuth";
+import { SAUDI_UNIVERSITIES } from "@/lib/leaderboardConstants";
 import {
   Search, Users, BarChart3, Star, Award, Eye, TrendingUp, Briefcase,
-  CheckCircle, X, Info, ShieldCheck, MessageSquare, Calendar, Bell, Send, Target
+  CheckCircle, X, Info, ShieldCheck, MessageSquare, Calendar, Bell, Send, Target, Zap
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -95,6 +96,10 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
   const [messageDialog, setMessageDialog] = useState<any>(null);
   const [messageText, setMessageText] = useState("");
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [filterUni, setFilterUni] = useState("all");
+  const [smartMatchResults, setSmartMatchResults] = useState<any[] | null>(null);
+  const [smartMatchLoading, setSmartMatchLoading] = useState(false);
+  const [smartMatchJob, setSmartMatchJob] = useState<any>(null);
 
   const loadDashboard = useCallback(async () => {
     const [{ data: hr }, { data: students }, { data: sl }, { data: majorsList }, { data: certs }, { data: sCerts }, { data: ivs }, { data: jp }, { data: notifs }, { data: pipelineData }] = await Promise.all([
@@ -264,6 +269,28 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
     loadDashboard();
   };
 
+  const runSmartMatch = async (jp: any) => {
+    setSmartMatchLoading(true);
+    setSmartMatchJob(jp);
+    try {
+      const { data, error } = await supabase.functions.invoke("hr-smart-filter", {
+        body: {
+          action: "match-candidates",
+          job_posting_id: jp.id,
+          required_skills: jp.required_skills || [],
+          min_ers: jp.min_ers_score || 0,
+          limit: 20,
+        },
+      });
+      if (error) throw error;
+      setSmartMatchResults(data?.candidates || []);
+    } catch (e) {
+      console.error("Smart match error:", e);
+      toast({ title: "Smart Match failed", variant: "destructive" });
+    }
+    setSmartMatchLoading(false);
+  };
+
   if (loading) {
     return (
       <div className="container py-6 space-y-6">
@@ -280,6 +307,7 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
     if (searchQuery && !s.profiles?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())) return false;
     if (minERS && (s.ers_score || 0) < parseInt(minERS)) return false;
     if (filterMajor !== "all" && s.major !== filterMajor) return false;
+    if (filterUni !== "all" && s.university !== filterUni) return false;
     if (filterCert !== "all") {
       const hasCert = studentCerts.some(sc => sc.user_id === s.user_id && (sc as any).certification_catalog?.name === filterCert);
       if (!hasCert) return false;
@@ -319,12 +347,19 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
         {/* Search */}
         <TabsContent value="search">
           <div className="rounded-xl border bg-card p-6">
-            <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-6 gap-3 mb-6">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input placeholder="Search by name..." className="pl-9" value={searchQuery} onChange={e => setSearchQuery(e.target.value)} maxLength={100} />
               </div>
               <Input placeholder="Min ERS" type="number" min={0} max={100} value={minERS} onChange={e => setMinERS(e.target.value)} />
+              <Select value={filterUni} onValueChange={setFilterUni}>
+                <SelectTrigger><SelectValue placeholder="University" /></SelectTrigger>
+                <SelectContent className="max-h-60">
+                  <SelectItem value="all">All Universities</SelectItem>
+                  {SAUDI_UNIVERSITIES.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                </SelectContent>
+              </Select>
               <Select value={filterMajor} onValueChange={setFilterMajor}>
                 <SelectTrigger><SelectValue placeholder="Major" /></SelectTrigger>
                 <SelectContent className="max-h-60">
@@ -502,7 +537,7 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
                   <motion.div key={jp.id} className="rounded-lg border p-4"
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }}>
                     <div className="flex items-start justify-between gap-3">
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-sm">{jp.title}</p>
                           <Badge variant={jp.is_active ? "default" : "outline"} className="text-[10px]">{jp.is_active ? "Active" : "Closed"}</Badge>
@@ -515,7 +550,12 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
                           </div>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground">{new Date(jp.created_at).toLocaleDateString()}</p>
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="outline" onClick={() => runSmartMatch(jp)} disabled={smartMatchLoading}>
+                          <Zap className="h-4 w-4 mr-1" />Smart Match
+                        </Button>
+                        <p className="text-xs text-muted-foreground">{new Date(jp.created_at).toLocaleDateString()}</p>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
@@ -719,6 +759,68 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
             <Button variant="outline" onClick={() => setMessageDialog(null)}>Cancel</Button>
             <Button onClick={sendMessage} disabled={!messageText.trim()}><Send className="h-4 w-4 mr-1" />Send</Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Smart Match Results Dialog */}
+      <Dialog open={smartMatchResults !== null} onOpenChange={() => { setSmartMatchResults(null); setSmartMatchJob(null); }}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-primary" />
+              Smart Match Results {smartMatchJob && `— ${smartMatchJob.title}`}
+            </DialogTitle>
+            <DialogDescription>
+              Candidates ranked by Job-Fit Score based on skill overlap, certifications, and ERS.
+            </DialogDescription>
+          </DialogHeader>
+          {smartMatchLoading ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16" />)}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {(smartMatchResults || []).map((c: any, i: number) => (
+                <motion.div key={c.user_id} className="flex items-center gap-4 rounded-lg border p-4"
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">
+                    {c.rank}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">{c.full_name}</p>
+                    <p className="text-xs text-muted-foreground">{c.university} · {c.major}</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {(c.fit?.matched_skills || []).map((s: string) => (
+                        <Badge key={s} variant="secondary" className="text-[10px] bg-primary/10 text-primary">{s}</Badge>
+                      ))}
+                      {(c.fit?.matched_certs || []).map((ct: string) => (
+                        <Badge key={ct} variant="secondary" className="text-[10px] bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]">{ct}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-primary">{Math.round(c.fit?.fit_score || 0)}</p>
+                    <p className="text-[10px] text-muted-foreground">Job Fit</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-semibold">{Math.round(c.ers_score || 0)}</p>
+                    <p className="text-[10px] text-muted-foreground">ERS</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button size="sm" variant="outline" onClick={() => { setSmartMatchResults(null); addToPipeline(c.user_id, smartMatchJob?.title); }}>
+                      <Target className="h-3 w-3" />
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => { setSmartMatchResults(null); setInterviewDialog({ user_id: c.user_id, profiles: { full_name: c.full_name } }); }}>
+                      <Calendar className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </motion.div>
+              ))}
+              {(smartMatchResults || []).length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-8">No matching candidates found.</p>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>

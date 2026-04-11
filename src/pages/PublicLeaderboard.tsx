@@ -8,7 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Trophy, Users, TrendingUp, Building2, ShieldCheck, FileCheck, Award, ArrowUp, ArrowDown } from "lucide-react";
 import { Link } from "react-router-dom";
 import { useI18n } from "@/lib/i18n";
-import { SAUDI_UNIVERSITIES, COMMON_MAJORS } from "@/lib/leaderboardConstants";
+import { SAUDI_UNIVERSITIES, COMMON_MAJORS, SAUDI_REGIONS, UNIVERSITY_REGION_MAP } from "@/lib/leaderboardConstants";
 import LeaderboardStudentRow from "@/components/leaderboard/LeaderboardStudentRow";
 import LeaderboardUniversityRow from "@/components/leaderboard/LeaderboardUniversityRow";
 import LeaderboardMotivation from "@/components/leaderboard/LeaderboardMotivation";
@@ -20,6 +20,7 @@ const PublicLeaderboard = () => {
   const [tab, setTab] = useState<"students" | "universities">("students");
   const [filterMajor, setFilterMajor] = useState("all");
   const [filterUni, setFilterUni] = useState("all");
+  const [filterRegion, setFilterRegion] = useState("all");
   const [verifiedCerts, setVerifiedCerts] = useState<Map<string, number>>(new Map());
   const [verifiedProjects, setVerifiedProjects] = useState<Map<string, number>>(new Map());
   const [verifiedTranscripts, setVerifiedTranscripts] = useState<Set<string>>(new Set());
@@ -105,9 +106,10 @@ const PublicLeaderboard = () => {
     return students.filter(s => {
       if (filterMajor !== "all" && s.major !== filterMajor) return false;
       if (filterUni !== "all" && s.university !== filterUni) return false;
+      if (filterRegion !== "all" && UNIVERSITY_REGION_MAP[s.university] !== filterRegion) return false;
       return true;
     });
-  }, [students, filterMajor, filterUni]);
+  }, [students, filterMajor, filterUni, filterRegion]);
 
   // University stats
   const uniStats = useMemo(() => {
@@ -166,11 +168,21 @@ const PublicLeaderboard = () => {
         <>
           {/* Filters */}
           <div className="flex gap-3 justify-center flex-wrap">
+            <Select value={filterRegion} onValueChange={v => { setFilterRegion(v); if (v !== "all") setFilterUni("all"); }}>
+              <SelectTrigger className="w-44"><SelectValue placeholder={t("leaderboard.allRegions")} /></SelectTrigger>
+              <SelectContent className="max-h-60">
+                <SelectItem value="all">{t("leaderboard.allRegions")}</SelectItem>
+                {SAUDI_REGIONS.map(r => <SelectItem key={r} value={r}>{r}</SelectItem>)}
+              </SelectContent>
+            </Select>
             <Select value={filterUni} onValueChange={setFilterUni}>
               <SelectTrigger className="w-56"><SelectValue placeholder={t("leaderboard.allUnis")} /></SelectTrigger>
               <SelectContent className="max-h-60">
                 <SelectItem value="all">{t("leaderboard.allUnis")}</SelectItem>
-                {SAUDI_UNIVERSITIES.map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
+                {(filterRegion !== "all"
+                  ? SAUDI_UNIVERSITIES.filter(u => UNIVERSITY_REGION_MAP[u] === filterRegion)
+                  : SAUDI_UNIVERSITIES
+                ).map(u => <SelectItem key={u} value={u}>{u}</SelectItem>)}
               </SelectContent>
             </Select>
             <Select value={filterMajor} onValueChange={setFilterMajor}>
