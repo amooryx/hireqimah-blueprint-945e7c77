@@ -14,6 +14,30 @@ export type Database = {
   }
   public: {
     Tables: {
+      activity_feed: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          id: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          id?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
       audit_logs: {
         Row: {
           action: string
@@ -137,6 +161,39 @@ export type Database = {
         }
         Relationships: []
       }
+      hr_candidate_pipeline: {
+        Row: {
+          created_at: string
+          hr_user_id: string
+          id: string
+          job_title: string | null
+          notes: string | null
+          stage: string
+          student_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hr_user_id: string
+          id?: string
+          job_title?: string | null
+          notes?: string | null
+          stage?: string
+          student_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hr_user_id?: string
+          id?: string
+          job_title?: string | null
+          notes?: string | null
+          stage?: string
+          student_user_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       hr_profiles: {
         Row: {
           company_name: string
@@ -191,6 +248,42 @@ export type Database = {
         }
         Relationships: []
       }
+      interview_requests: {
+        Row: {
+          created_at: string
+          hr_user_id: string
+          id: string
+          job_description: string | null
+          job_title: string | null
+          status: string
+          student_response: string | null
+          student_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          hr_user_id: string
+          id?: string
+          job_description?: string | null
+          job_title?: string | null
+          status?: string
+          student_response?: string | null
+          student_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          hr_user_id?: string
+          id?: string
+          job_description?: string | null
+          job_title?: string | null
+          status?: string
+          student_response?: string | null
+          student_user_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       job_cache: {
         Row: {
           company: string | null
@@ -236,6 +329,192 @@ export type Database = {
           source?: string | null
           source_url?: string | null
           title?: string
+        }
+        Relationships: []
+      }
+      job_postings: {
+        Row: {
+          company: string | null
+          created_at: string
+          description: string | null
+          hr_user_id: string
+          id: string
+          is_active: boolean
+          location: string | null
+          min_ers_score: number | null
+          required_skills: string[] | null
+          sector: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          company?: string | null
+          created_at?: string
+          description?: string | null
+          hr_user_id: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          min_ers_score?: number | null
+          required_skills?: string[] | null
+          sector?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          company?: string | null
+          created_at?: string
+          description?: string | null
+          hr_user_id?: string
+          id?: string
+          is_active?: boolean
+          location?: string | null
+          min_ers_score?: number | null
+          required_skills?: string[] | null
+          sector?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      market_cert_demand: {
+        Row: {
+          cert_name: string
+          demand_score: number | null
+          id: string
+          monthly_trend: number | null
+          sector: string | null
+          updated_at: string
+          weekly_trend: number | null
+        }
+        Insert: {
+          cert_name: string
+          demand_score?: number | null
+          id?: string
+          monthly_trend?: number | null
+          sector?: string | null
+          updated_at?: string
+          weekly_trend?: number | null
+        }
+        Update: {
+          cert_name?: string
+          demand_score?: number | null
+          id?: string
+          monthly_trend?: number | null
+          sector?: string | null
+          updated_at?: string
+          weekly_trend?: number | null
+        }
+        Relationships: []
+      }
+      market_refresh_log: {
+        Row: {
+          completed_at: string | null
+          id: string
+          jobs_analyzed: number | null
+          started_at: string
+          status: string
+        }
+        Insert: {
+          completed_at?: string | null
+          id?: string
+          jobs_analyzed?: number | null
+          started_at?: string
+          status?: string
+        }
+        Update: {
+          completed_at?: string | null
+          id?: string
+          jobs_analyzed?: number | null
+          started_at?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      market_skill_demand: {
+        Row: {
+          demand_score: number | null
+          id: string
+          monthly_trend: number | null
+          sector: string | null
+          skill_name: string
+          updated_at: string
+          weekly_trend: number | null
+        }
+        Insert: {
+          demand_score?: number | null
+          id?: string
+          monthly_trend?: number | null
+          sector?: string | null
+          skill_name: string
+          updated_at?: string
+          weekly_trend?: number | null
+        }
+        Update: {
+          demand_score?: number | null
+          id?: string
+          monthly_trend?: number | null
+          sector?: string | null
+          skill_name?: string
+          updated_at?: string
+          weekly_trend?: number | null
+        }
+        Relationships: []
+      }
+      messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          read: boolean
+          recipient_id: string
+          sender_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          recipient_id: string
+          sender_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          read?: boolean
+          recipient_id?: string
+          sender_id?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          read: boolean
+          title: string
+          type: string
+          user_id: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          read?: boolean
+          title: string
+          type?: string
+          user_id: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          read?: boolean
+          title?: string
+          type?: string
+          user_id?: string
         }
         Relationships: []
       }
@@ -305,6 +584,30 @@ export type Database = {
           source?: string | null
           user_id?: string
           verified?: boolean | null
+        }
+        Relationships: []
+      }
+      student_badges: {
+        Row: {
+          badge_icon: string | null
+          badge_label: string
+          earned_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          badge_icon?: string | null
+          badge_label: string
+          earned_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          badge_icon?: string | null
+          badge_label?: string
+          earned_at?: string
+          id?: string
+          user_id?: string
         }
         Relationships: []
       }
