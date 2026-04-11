@@ -106,9 +106,10 @@ const PublicLeaderboard = () => {
     return students.filter(s => {
       if (filterMajor !== "all" && s.major !== filterMajor) return false;
       if (filterUni !== "all" && s.university !== filterUni) return false;
+      if (filterRegion !== "all" && UNIVERSITY_REGION_MAP[s.university] !== filterRegion) return false;
       return true;
     });
-  }, [students, filterMajor, filterUni]);
+  }, [students, filterMajor, filterUni, filterRegion]);
 
   // University stats
   const uniStats = useMemo(() => {
