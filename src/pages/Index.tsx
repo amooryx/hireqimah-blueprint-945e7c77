@@ -38,7 +38,7 @@ const Index = () => {
             <motion.img
               src={logo}
               alt="HireQimah"
-              className="h-10 md:h-12 mb-5 brightness-0 invert"
+              className="h-10 md:h-12 mb-5 drop-shadow-lg"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}
             />
 
