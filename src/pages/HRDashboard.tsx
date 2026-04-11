@@ -537,7 +537,7 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
                   <motion.div key={jp.id} className="rounded-lg border p-4"
                     initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }}>
                     <div className="flex items-start justify-between gap-3">
-                      <div>
+                      <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <p className="font-medium text-sm">{jp.title}</p>
                           <Badge variant={jp.is_active ? "default" : "outline"} className="text-[10px]">{jp.is_active ? "Active" : "Closed"}</Badge>
@@ -550,7 +550,12 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
                           </div>
                         )}
                       </div>
-                      <p className="text-xs text-muted-foreground">{new Date(jp.created_at).toLocaleDateString()}</p>
+                      <div className="flex items-center gap-2">
+                        <Button size="sm" variant="outline" onClick={() => runSmartMatch(jp)} disabled={smartMatchLoading}>
+                          <Zap className="h-4 w-4 mr-1" />Smart Match
+                        </Button>
+                        <p className="text-xs text-muted-foreground">{new Date(jp.created_at).toLocaleDateString()}</p>
+                      </div>
                     </div>
                   </motion.div>
                 ))}
