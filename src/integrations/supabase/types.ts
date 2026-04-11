@@ -431,6 +431,36 @@ export type Database = {
         }
         Relationships: []
       }
+      market_role_demand: {
+        Row: {
+          demand_score: number | null
+          id: string
+          monthly_trend: number | null
+          role_title: string
+          sector: string | null
+          updated_at: string
+          weekly_trend: number | null
+        }
+        Insert: {
+          demand_score?: number | null
+          id?: string
+          monthly_trend?: number | null
+          role_title: string
+          sector?: string | null
+          updated_at?: string
+          weekly_trend?: number | null
+        }
+        Update: {
+          demand_score?: number | null
+          id?: string
+          monthly_trend?: number | null
+          role_title?: string
+          sector?: string | null
+          updated_at?: string
+          weekly_trend?: number | null
+        }
+        Relationships: []
+      }
       market_skill_demand: {
         Row: {
           demand_score: number | null
