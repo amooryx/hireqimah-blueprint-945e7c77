@@ -96,6 +96,10 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
   const [messageDialog, setMessageDialog] = useState<any>(null);
   const [messageText, setMessageText] = useState("");
   const [notifications, setNotifications] = useState<any[]>([]);
+  const [filterUni, setFilterUni] = useState("all");
+  const [smartMatchResults, setSmartMatchResults] = useState<any[] | null>(null);
+  const [smartMatchLoading, setSmartMatchLoading] = useState(false);
+  const [smartMatchJob, setSmartMatchJob] = useState<any>(null);
 
   const loadDashboard = useCallback(async () => {
     const [{ data: hr }, { data: students }, { data: sl }, { data: majorsList }, { data: certs }, { data: sCerts }, { data: ivs }, { data: jp }, { data: notifs }, { data: pipelineData }] = await Promise.all([
