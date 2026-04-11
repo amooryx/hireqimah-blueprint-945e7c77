@@ -852,10 +852,36 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      leaderboard_ranked: {
+        Row: {
+          avatar_url: string | null
+          ers_score: number | null
+          full_name: string | null
+          gpa: number | null
+          gpa_scale: Database["public"]["Enums"]["gpa_scale"] | null
+          major: string | null
+          major_rank: number | null
+          national_rank: number | null
+          region: string | null
+          university: string | null
+          university_rank: number | null
+          user_id: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       calculate_dynamic_ers: { Args: { _user_id: string }; Returns: number }
+      calculate_job_fit: {
+        Args: {
+          _min_ers?: number
+          _required_certifications: string[]
+          _required_skills: string[]
+          _student_user_id: string
+        }
+        Returns: Json
+      }
+      get_university_region: { Args: { _university: string }; Returns: string }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -863,6 +889,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      refresh_leaderboard: { Args: never; Returns: undefined }
     }
     Enums: {
       app_role: "student" | "hr" | "university" | "admin"
