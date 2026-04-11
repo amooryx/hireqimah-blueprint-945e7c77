@@ -269,7 +269,28 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
     loadDashboard();
   };
 
-  if (loading) {
+  const runSmartMatch = async (jp: any) => {
+    setSmartMatchLoading(true);
+    setSmartMatchJob(jp);
+    try {
+      const { data, error } = await supabase.functions.invoke("hr-smart-filter", {
+        body: {
+          action: "match-candidates",
+          job_posting_id: jp.id,
+          required_skills: jp.required_skills || [],
+          min_ers: jp.min_ers_score || 0,
+          limit: 20,
+        },
+      });
+      if (error) throw error;
+      setSmartMatchResults(data?.candidates || []);
+    } catch (e) {
+      console.error("Smart match error:", e);
+      toast({ title: "Smart Match failed", variant: "destructive" });
+    }
+    setSmartMatchLoading(false);
+  };
+
     return (
       <div className="container py-6 space-y-6">
         <Skeleton className="h-8 w-64" />
