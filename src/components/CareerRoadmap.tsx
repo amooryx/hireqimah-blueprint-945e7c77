@@ -19,12 +19,7 @@ interface CareerRoadmapProps {
   currentCareerTarget?: string;
 }
 
-const POPULAR_CAREERS = [
-  "Software Engineer", "Cloud Engineer", "Penetration Tester",
-  "Data Analyst", "AI Engineer", "SOC Analyst", "DevOps Engineer",
-  "Cybersecurity Analyst", "Full Stack Developer", "Business Analyst",
-  "Network Engineer", "UI/UX Designer",
-];
+const POPULAR_CAREERS = getAllCareerNames().slice(0, 12);
 
 function TrendIcon({ value }: { value: number }) {
   if (value > 2) return <TrendingUp className="h-3 w-3 text-[hsl(var(--success))]" />;
