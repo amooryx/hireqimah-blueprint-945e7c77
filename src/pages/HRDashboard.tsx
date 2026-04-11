@@ -761,6 +761,68 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Smart Match Results Dialog */}
+      <Dialog open={smartMatchResults !== null} onOpenChange={() => { setSmartMatchResults(null); setSmartMatchJob(null); }}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Zap className="h-5 w-5 text-primary" />
+              Smart Match Results {smartMatchJob && `— ${smartMatchJob.title}`}
+            </DialogTitle>
+            <DialogDescription>
+              Candidates ranked by Job-Fit Score based on skill overlap, certifications, and ERS.
+            </DialogDescription>
+          </DialogHeader>
+          {smartMatchLoading ? (
+            <div className="space-y-3">
+              {[...Array(5)].map((_, i) => <Skeleton key={i} className="h-16" />)}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {(smartMatchResults || []).map((c: any, i: number) => (
+                <motion.div key={c.user_id} className="flex items-center gap-4 rounded-lg border p-4"
+                  initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03 }}>
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-primary/10 text-primary font-bold text-sm">
+                    {c.rank}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm">{c.full_name}</p>
+                    <p className="text-xs text-muted-foreground">{c.university} · {c.major}</p>
+                    <div className="flex flex-wrap gap-1 mt-1">
+                      {(c.fit?.matched_skills || []).map((s: string) => (
+                        <Badge key={s} variant="secondary" className="text-[10px] bg-primary/10 text-primary">{s}</Badge>
+                      ))}
+                      {(c.fit?.matched_certs || []).map((ct: string) => (
+                        <Badge key={ct} variant="secondary" className="text-[10px] bg-[hsl(var(--success))]/10 text-[hsl(var(--success))]">{ct}</Badge>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-primary">{Math.round(c.fit?.fit_score || 0)}</p>
+                    <p className="text-[10px] text-muted-foreground">Job Fit</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-lg font-semibold">{Math.round(c.ers_score || 0)}</p>
+                    <p className="text-[10px] text-muted-foreground">ERS</p>
+                  </div>
+                  <div className="flex gap-1">
+                    <Button size="sm" variant="outline" onClick={() => { setSmartMatchResults(null); addToPipeline(c.user_id, smartMatchJob?.title); }}>
+                      <Target className="h-3 w-3" />
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => { setSmartMatchResults(null); setInterviewDialog({ user_id: c.user_id, profiles: { full_name: c.full_name } }); }}>
+                      <Calendar className="h-3 w-3" />
+                    </Button>
+                  </div>
+                </motion.div>
+              ))}
+              {(smartMatchResults || []).length === 0 && (
+                <p className="text-sm text-muted-foreground text-center py-8">No matching candidates found.</p>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
