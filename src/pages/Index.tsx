@@ -38,7 +38,7 @@ const Index = () => {
             <motion.img
               src={logo}
               alt="HireQimah"
-              className="h-10 md:h-12 mb-5 brightness-0 invert"
+              className="h-10 md:h-12 mb-5 drop-shadow-lg"
               initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.4 }}
             />
 
@@ -47,10 +47,10 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1, duration: 0.4 }}
             >
               {t("hero.headline").split("\n").map((line, i) => (
-                <h1 key={i} className={`text-2xl md:text-4xl lg:text-[2.75rem] font-bold font-heading text-white leading-tight ${i > 0 ? "mt-2" : ""}`}>
-                  {line}
-                </h1>
-              ))}
+                 <h1 key={i} className={`text-2xl md:text-4xl lg:text-[2.75rem] font-bold font-heading text-white leading-tight ${i > 0 ? "mt-5" : ""}`}>
+                   {line}
+                 </h1>
+               ))}
             </motion.div>
 
             <motion.p

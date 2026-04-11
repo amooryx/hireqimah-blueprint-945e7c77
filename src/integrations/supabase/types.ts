@@ -431,6 +431,36 @@ export type Database = {
         }
         Relationships: []
       }
+      market_role_demand: {
+        Row: {
+          demand_score: number | null
+          id: string
+          monthly_trend: number | null
+          role_title: string
+          sector: string | null
+          updated_at: string
+          weekly_trend: number | null
+        }
+        Insert: {
+          demand_score?: number | null
+          id?: string
+          monthly_trend?: number | null
+          role_title: string
+          sector?: string | null
+          updated_at?: string
+          weekly_trend?: number | null
+        }
+        Update: {
+          demand_score?: number | null
+          id?: string
+          monthly_trend?: number | null
+          role_title?: string
+          sector?: string | null
+          updated_at?: string
+          weekly_trend?: number | null
+        }
+        Relationships: []
+      }
       market_skill_demand: {
         Row: {
           demand_score: number | null
@@ -825,6 +855,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      calculate_dynamic_ers: { Args: { _user_id: string }; Returns: number }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
