@@ -138,7 +138,7 @@ serve(async (req) => {
           },
           body: JSON.stringify({
             query: searchQuery,
-            limit: 20,
+            limit: 10,
             scrapeOptions: { formats: ["markdown"] },
           }),
         });
