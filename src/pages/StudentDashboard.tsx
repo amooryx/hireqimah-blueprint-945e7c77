@@ -14,12 +14,19 @@ import { supabase } from "@/integrations/supabase/client";
 import { untypedTable } from "@/lib/untypedTable";
 import { fetchStudentDashboard, calculateERSFromData, fetchLeaderboard } from "@/lib/supabaseData";
 import type { AuthUser } from "@/lib/supabaseAuth";
+import { useI18n } from "@/lib/i18n";
 import {
   Trophy, Target, Briefcase, Map, Bell, Upload, Award,
   TrendingUp, Star, CheckCircle, Circle, Clock, Info,
-  MessageSquare, Calendar, User, Link as LinkIcon, Share2, Copy
+  MessageSquare, Calendar, User, Link as LinkIcon, Share2, Copy,
+  GraduationCap, ExternalLink, Send
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Tooltip,
   TooltipContent,
