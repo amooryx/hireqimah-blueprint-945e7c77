@@ -553,7 +553,7 @@ const translations: Record<string, Record<Lang, string>> = {
   "dash.skillMatrix": { en: "Skill Matrix", ar: "مصفوفة المهارات" },
   "dash.noSkillsYet": { en: "No skills added yet.", ar: "لم يتم إضافة مهارات بعد." },
   "dash.notificationsTitle": { en: "Notifications", ar: "الإشعارات" },
-  "dash.markAllRead": { en: "Mark all read", ar: "تحديد الكل كمقروء" },
+  
   "dash.noNotificationsYet": { en: "No notifications yet.", ar: "لا توجد إشعارات بعد." },
   "dash.rankLabel": { en: "Rank", ar: "الترتيب" },
   "dash.ersLabel": { en: "ERS", ar: "الجاهزية" },
