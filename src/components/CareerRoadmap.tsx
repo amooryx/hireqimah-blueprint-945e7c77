@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { untypedTable } from "@/lib/untypedTable";
+import { fetchMarketSkillRankings, fetchMarketCertRankings, fetchStudentSkillGaps } from "@/lib/supabaseData";
 import { useToast } from "@/hooks/use-toast";
 import { findCareerPath, generateRoadmapFromPath, getAllCareerNames } from "@/lib/careerRoadmapData";
 import {
