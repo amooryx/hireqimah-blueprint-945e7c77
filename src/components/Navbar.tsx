@@ -1,7 +1,7 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/hireqimah-logo.png";
-import { LogOut, Menu, X, LayoutDashboard, Sun, Moon, Globe } from "lucide-react";
+import { LogOut, Menu, X, LayoutDashboard, Sun, Moon, Globe, Settings } from "lucide-react";
 import { useState } from "react";
 import type { AuthUser } from "@/lib/supabaseAuth";
 import { useTheme } from "@/lib/theme";
@@ -89,6 +89,9 @@ const Navbar = ({ user, onLogout }: NavbarProps) => {
                   <LayoutDashboard className="h-3.5 w-3.5 ltr:mr-1 rtl:ml-1" /> {t("nav.dashboard")}
                 </Button>
               )}
+              <Button size="sm" variant="ghost" className="h-8 text-xs" onClick={() => navigate("/settings")}>
+                <Settings className="h-3.5 w-3.5 ltr:mr-1 rtl:ml-1" /> {t("nav.settings")}
+              </Button>
               <span className="text-xs text-muted-foreground max-w-[120px] truncate">{user.full_name}</span>
               <span className="rounded bg-primary/10 px-1.5 py-0.5 text-[10px] font-semibold text-primary capitalize">{user.role}</span>
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onLogout}>

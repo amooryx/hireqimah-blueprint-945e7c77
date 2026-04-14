@@ -28,6 +28,7 @@ import Founders from "./pages/Founders";
 import SecurityStatement from "./pages/SecurityStatement";
 import PublicProfile from "./pages/PublicProfile";
 import PublicLeaderboard from "./pages/PublicLeaderboard";
+import Settings from "./pages/Settings";
 import { getCurrentAuthUser, signOut, type AuthUser, type AppRole } from "@/lib/supabaseAuth";
 
 const queryClient = new QueryClient();
@@ -151,6 +152,7 @@ const App = () => {
                 <Route path="/hr" element={effectiveRole === "hr" ? <HRDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/login/hr" />} />
                 <Route path="/university" element={effectiveRole === "university" ? <UniversityDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/login/university" />} />
                 <Route path="/admin" element={effectiveRole === "admin" ? <AdminDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/admin/login" />} />
+                <Route path="/settings" element={user ? <Settings user={user} /> : <Navigate to="/auth/select-role?mode=signin" />} />
                 <Route path="/profile/:userId" element={<PublicProfile />} />
                 <Route path="/leaderboard" element={<PublicLeaderboard />} />
                 <Route path="/privacy" element={<Privacy />} />

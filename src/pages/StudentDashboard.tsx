@@ -14,10 +14,12 @@ import { supabase } from "@/integrations/supabase/client";
 import { untypedTable } from "@/lib/untypedTable";
 import { fetchStudentDashboard, calculateERSFromData, fetchLeaderboard } from "@/lib/supabaseData";
 import type { AuthUser } from "@/lib/supabaseAuth";
+import { useI18n } from "@/lib/i18n";
 import {
   Trophy, Target, Briefcase, Map, Bell, Upload, Award,
   TrendingUp, Star, CheckCircle, Circle, Clock, Info,
-  MessageSquare, Calendar, User, Link as LinkIcon, Share2, Copy
+  MessageSquare, Calendar, User, Link as LinkIcon, Share2, Copy,
+  GraduationCap, ExternalLink, Send
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -30,6 +32,7 @@ interface StudentDashboardProps { user: AuthUser; }
 
 const StudentDashboard = ({ user: authUser }: StudentDashboardProps) => {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [dashData, setDashData] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
@@ -43,6 +46,8 @@ const StudentDashboard = ({ user: authUser }: StudentDashboardProps) => {
   const [badges, setBadges] = useState<any[]>([]);
   const [activityFeed, setActivityFeed] = useState<any[]>([]);
   const [jobPostings, setJobPostings] = useState<any[]>([]);
+  const [applications, setApplications] = useState<any[]>([]);
+  const [applyingTo, setApplyingTo] = useState<string | null>(null);
 
   const loadDashboard = useCallback(async () => {
     const [data, { data: interviewData }, { data: notifData }] = await Promise.all([
@@ -95,9 +100,31 @@ const StudentDashboard = ({ user: authUser }: StudentDashboardProps) => {
       .then(({ data }: any) => setBadges(data || []));
     untypedTable("activity_feed").select("*").order("created_at", { ascending: false }).limit(20)
       .then(({ data }: any) => setActivityFeed(data || []));
-    untypedTable("job_postings").select("*").eq("is_active", true).order("created_at", { ascending: false }).limit(20)
+    untypedTable("job_postings").select("*").eq("is_active", true).order("created_at", { ascending: false }).limit(50)
       .then(({ data }: any) => setJobPostings(data || []));
+    untypedTable("applications").select("*").eq("student_user_id", authUser.id)
+      .then(({ data }: any) => setApplications(data || []));
   }, [authUser.id]);
+
+  const handleApply = async (jobPostingId: string) => {
+    if (applications.some(a => a.job_posting_id === jobPostingId)) {
+      toast({ title: t("dash.alreadyApplied") }); return;
+    }
+    setApplyingTo(jobPostingId);
+    try {
+      const { error } = await untypedTable("applications").insert({
+        student_user_id: authUser.id,
+        job_posting_id: jobPostingId,
+        status: "applied",
+      });
+      if (error) throw error;
+      setApplications(prev => [...prev, { student_user_id: authUser.id, job_posting_id: jobPostingId, status: "applied" }]);
+      toast({ title: t("dash.applicationSent") });
+    } catch (e: any) {
+      toast({ title: t("dash.uploadFailed"), description: e.message, variant: "destructive" });
+    }
+    setApplyingTo(null);
+  };
 
   const handleFileUpload = useCallback((type: "transcript" | "certificate" | "project") => {
     const input = document.createElement("input");
@@ -209,30 +236,31 @@ const StudentDashboard = ({ user: authUser }: StudentDashboardProps) => {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Target} label="ERS Score" value={ers.total} delay={0} />
-        <StatCard icon={Trophy} label="Rank" value={myRank > 0 ? `#${myRank}` : "—"} delay={0.1} />
-        <StatCard icon={Award} label="Certifications" value={dashData?.certifications?.length || 0} delay={0.2} />
-        <StatCard icon={Briefcase} label="Interviews" value={interviews.length} delay={0.3} />
+        <StatCard icon={Target} label={t("dash.ersScore")} value={ers.total} delay={0} />
+        <StatCard icon={Trophy} label={t("dash.rank")} value={myRank > 0 ? `#${myRank}` : "—"} delay={0.1} />
+        <StatCard icon={Award} label={t("dash.certifications")} value={dashData?.certifications?.length || 0} delay={0.2} />
+        <StatCard icon={Briefcase} label={t("dash.interviews")} value={interviews.length} delay={0.3} />
       </div>
 
       <Tabs defaultValue="ers" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
-          <TabsTrigger value="ers"><Target className="h-4 w-4 mr-1 hidden sm:inline" />ERS</TabsTrigger>
-          <TabsTrigger value="leaderboard"><Trophy className="h-4 w-4 mr-1 hidden sm:inline" />Rank</TabsTrigger>
-          <TabsTrigger value="uploads"><Upload className="h-4 w-4 mr-1 hidden sm:inline" />Docs</TabsTrigger>
-          <TabsTrigger value="opportunities" className="relative">
-            <Briefcase className="h-4 w-4 mr-1 hidden sm:inline" />Opps
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9">
+          <TabsTrigger value="ers"><Target className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.ers")}</TabsTrigger>
+          <TabsTrigger value="leaderboard"><Trophy className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.leaderboard")}</TabsTrigger>
+          <TabsTrigger value="uploads"><Upload className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.docs")}</TabsTrigger>
+          <TabsTrigger value="internships"><GraduationCap className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.internships")}</TabsTrigger>
+          <TabsTrigger value="jobs"><TrendingUp className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.jobs")}</TabsTrigger>
+          <TabsTrigger value="interviews" className="relative">
+            <Send className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.interviewRequests")}
             {interviews.filter(i => i.status === "requested").length > 0 && (
               <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full text-[10px] w-4 h-4 flex items-center justify-center">
                 {interviews.filter(i => i.status === "requested").length}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="roadmap"><Map className="h-4 w-4 mr-1 hidden sm:inline" />Road</TabsTrigger>
-          <TabsTrigger value="jobs"><TrendingUp className="h-4 w-4 mr-1 hidden sm:inline" />Jobs</TabsTrigger>
-          <TabsTrigger value="skills"><Star className="h-4 w-4 mr-1 hidden sm:inline" />Skills</TabsTrigger>
+          <TabsTrigger value="roadmap"><Map className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.roadmap")}</TabsTrigger>
+          <TabsTrigger value="skills"><Star className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.skills")}</TabsTrigger>
           <TabsTrigger value="notifications" className="relative">
-            <Bell className="h-4 w-4 mr-1 hidden sm:inline" />Alerts
+            <Bell className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.notifications")}
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full text-[10px] w-4 h-4 flex items-center justify-center">
                 {unreadCount}
@@ -411,14 +439,133 @@ const StudentDashboard = ({ user: authUser }: StudentDashboardProps) => {
           </div>
         </TabsContent>
 
-        {/* Opportunities - Interview Requests */}
-        <TabsContent value="opportunities">
+        {/* Internships Tab */}
+        <TabsContent value="internships">
           <div className="rounded-xl border bg-card p-6">
-            <h3 className="text-lg font-semibold font-heading mb-4">Interview Requests & Opportunities</h3>
+            <h3 className="text-lg font-semibold font-heading mb-4">{t("dash.internships")}</h3>
+            {(() => {
+              const internships = jobPostings.filter((jp: any) => jp.type === "internship");
+              return internships.length === 0 ? (
+                <div className="text-center py-12">
+                  <GraduationCap className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                  <p className="text-sm text-muted-foreground">{t("dash.noInternships")}</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {internships.map((jp: any) => {
+                    const hasApplied = applications.some(a => a.job_posting_id === jp.id);
+                    return (
+                      <div key={jp.id} className="rounded-lg border p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-sm">{jp.title}</p>
+                            <Badge variant="secondary" className="text-[10px]">{t("dash.internal")}</Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{jp.company || "—"} · {jp.location} · {jp.sector || "General"}</p>
+                          {jp.required_skills?.length > 0 && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {jp.required_skills.slice(0, 4).map((s: string) => <Badge key={s} variant="outline" className="text-[10px]">{s}</Badge>)}
+                            </div>
+                          )}
+                        </div>
+                        <Button size="sm" disabled={hasApplied || applyingTo === jp.id} onClick={() => handleApply(jp.id)}>
+                          {hasApplied ? <><CheckCircle className="h-4 w-4 mr-1" />{t("dash.applied")}</> : t("dash.apply")}
+                        </Button>
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+          </div>
+        </TabsContent>
+
+        {/* Jobs Tab - Internal + External */}
+        <TabsContent value="jobs">
+          <div className="rounded-xl border bg-card p-6">
+            <h3 className="text-lg font-semibold font-heading mb-2">{t("dash.jobs")}</h3>
+            <p className="text-sm text-muted-foreground mb-4">{t("dash.jobPostings")}</p>
+
+            {/* Internal Jobs */}
+            {(() => {
+              const internalJobs = jobPostings.filter((jp: any) => jp.type === "job" || !jp.type);
+              return internalJobs.length > 0 ? (
+                <div className="space-y-3 mb-6">
+                  {internalJobs.map((jp: any) => {
+                    const hasApplied = applications.some(a => a.job_posting_id === jp.id);
+                    return (
+                      <div key={jp.id} className="rounded-lg border p-4">
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2">
+                              <p className="font-medium text-sm">{jp.title}</p>
+                              <Badge className="text-[10px] bg-primary/10 text-primary">{t("dash.internal")}</Badge>
+                            </div>
+                            <p className="text-xs text-muted-foreground">{jp.company || "—"} · {jp.location} · {jp.sector || "General"}</p>
+                            {jp.required_skills?.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                {jp.required_skills.slice(0, 4).map((s: string) => <Badge key={s} variant="outline" className="text-[10px]">{s}</Badge>)}
+                              </div>
+                            )}
+                          </div>
+                          <Button size="sm" disabled={hasApplied || applyingTo === jp.id} onClick={() => handleApply(jp.id)}>
+                            {hasApplied ? <><CheckCircle className="h-4 w-4 mr-1" />{t("dash.applied")}</> : t("dash.apply")}
+                          </Button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : null;
+            })()}
+
+            {/* External Jobs from job_cache */}
+            {jobCache.length > 0 && (
+              <>
+                <h4 className="font-semibold mb-3 mt-4">{t("dash.external")} — {t("dash.marketTrends")}</h4>
+                <div className="space-y-3">
+                  {jobCache.slice(0, 20).map((job: any) => (
+                    <div key={job.id} className="rounded-lg border p-4">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium text-sm">{job.title}</p>
+                            <Badge variant="outline" className="text-[10px]">{t("dash.external")}</Badge>
+                          </div>
+                          <p className="text-xs text-muted-foreground">{job.company || "—"} · {job.location} · {job.sector}</p>
+                          {(job.required_skills?.length > 0 || job.required_certifications?.length > 0) && (
+                            <div className="flex flex-wrap gap-1 mt-1">
+                              {job.required_skills?.slice(0, 4).map((s: string) => <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>)}
+                            </div>
+                          )}
+                        </div>
+                        {job.source_url && (
+                          <a href={job.source_url} target="_blank" rel="noopener noreferrer">
+                            <Button size="sm" variant="outline">
+                              <ExternalLink className="h-4 w-4 mr-1" />{t("dash.applyExternally")}
+                            </Button>
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </>
+            )}
+            {jobPostings.filter((jp: any) => jp.type === "job" || !jp.type).length === 0 && jobCache.length === 0 && (
+              <p className="text-sm text-muted-foreground text-center py-8">{t("dash.noJobs")}</p>
+            )}
+          </div>
+        </TabsContent>
+
+        {/* Interview Requests & Opportunities */}
+        <TabsContent value="interviews">
+          <div className="rounded-xl border bg-card p-6">
+            <h3 className="text-lg font-semibold font-heading mb-4">{t("dash.interviewRequests")}</h3>
             {interviews.length === 0 ? (
               <div className="text-center py-12">
-                <Briefcase className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
-                <p className="text-sm text-muted-foreground">No interview requests yet. Keep improving your ERS to attract recruiters!</p>
+                <Send className="h-12 w-12 mx-auto text-muted-foreground mb-3" />
+                <p className="text-sm text-muted-foreground">{t("dash.noInterviews")}</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -428,7 +575,7 @@ const StudentDashboard = ({ user: authUser }: StudentDashboardProps) => {
                     <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2">
-                          <p className="font-medium text-sm">{iv.job_title || "Interview Request"}</p>
+                          <p className="font-medium text-sm">{iv.job_title || t("dash.interviewRequests")}</p>
                           <Badge variant={
                             iv.status === "requested" ? "default" :
                             iv.status === "accepted" ? "secondary" :
@@ -444,10 +591,10 @@ const StudentDashboard = ({ user: authUser }: StudentDashboardProps) => {
                       {iv.status === "requested" && (
                         <div className="flex gap-2">
                           <Button size="sm" onClick={() => handleInterviewResponse(iv.id, "accepted")}>
-                            <CheckCircle className="h-4 w-4 mr-1" />Accept
+                            <CheckCircle className="h-4 w-4 mr-1" />{t("dash.accept")}
                           </Button>
                           <Button size="sm" variant="outline" onClick={() => handleInterviewResponse(iv.id, "declined")}>
-                            Decline
+                            {t("dash.decline")}
                           </Button>
                         </div>
                       )}
@@ -456,35 +603,6 @@ const StudentDashboard = ({ user: authUser }: StudentDashboardProps) => {
                 ))}
               </div>
             )}
-
-            {/* Job matches based on profile */}
-            <h4 className="font-semibold mt-8 mb-3">Recommended Opportunities</h4>
-            {jobCache.length > 0 ? (
-              <div className="space-y-2">
-                {jobCache.filter(job => {
-                  const majorLower = (sp?.major || "").toLowerCase();
-                  const sectorLower = (job.sector || "").toLowerCase();
-                  return sectorLower.includes(majorLower.split(" ")[0]) || majorLower.includes(sectorLower.split(" ")[0]) || true;
-                }).slice(0, 10).map((job: any) => (
-                  <div key={job.id} className="rounded-lg border p-3 flex items-start justify-between gap-3">
-                    <div>
-                      <p className="text-sm font-medium">{job.title}</p>
-                      <p className="text-xs text-muted-foreground">{job.company || "—"} · {job.location} · {job.sector}</p>
-                      {job.required_skills?.length > 0 && (
-                        <div className="flex flex-wrap gap-1 mt-1">
-                          {job.required_skills.slice(0, 4).map((s: string) => <Badge key={s} variant="secondary" className="text-[10px]">{s}</Badge>)}
-                        </div>
-                      )}
-                    </div>
-                    {job.source_url && (
-                      <a href={job.source_url} target="_blank" rel="noopener noreferrer">
-                        <Button size="sm" variant="outline">View</Button>
-                      </a>
-                    )}
-                  </div>
-                ))}
-              </div>
-            ) : <p className="text-sm text-muted-foreground">No opportunities available yet.</p>}
           </div>
         </TabsContent>
 

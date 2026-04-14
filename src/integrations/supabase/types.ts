@@ -38,6 +38,44 @@ export type Database = {
         }
         Relationships: []
       }
+      applications: {
+        Row: {
+          cover_note: string | null
+          created_at: string
+          id: string
+          job_posting_id: string
+          status: string
+          student_user_id: string
+          updated_at: string
+        }
+        Insert: {
+          cover_note?: string | null
+          created_at?: string
+          id?: string
+          job_posting_id: string
+          status?: string
+          student_user_id: string
+          updated_at?: string
+        }
+        Update: {
+          cover_note?: string | null
+          created_at?: string
+          id?: string
+          job_posting_id?: string
+          status?: string
+          student_user_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "applications_job_posting_id_fkey"
+            columns: ["job_posting_id"]
+            isOneToOne: false
+            referencedRelation: "job_postings"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_logs: {
         Row: {
           action: string
@@ -393,6 +431,7 @@ export type Database = {
           required_skills: string[] | null
           sector: string | null
           title: string
+          type: Database["public"]["Enums"]["job_posting_type"]
           updated_at: string
         }
         Insert: {
@@ -407,6 +446,7 @@ export type Database = {
           required_skills?: string[] | null
           sector?: string | null
           title: string
+          type?: Database["public"]["Enums"]["job_posting_type"]
           updated_at?: string
         }
         Update: {
@@ -421,6 +461,7 @@ export type Database = {
           required_skills?: string[] | null
           sector?: string | null
           title?: string
+          type?: Database["public"]["Enums"]["job_posting_type"]
           updated_at?: string
         }
         Relationships: []
@@ -984,6 +1025,7 @@ export type Database = {
     Enums: {
       app_role: "student" | "hr" | "university" | "admin"
       gpa_scale: "4" | "5"
+      job_posting_type: "job" | "internship"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1113,6 +1155,7 @@ export const Constants = {
     Enums: {
       app_role: ["student", "hr", "university", "admin"],
       gpa_scale: ["4", "5"],
+      job_posting_type: ["job", "internship"],
     },
   },
 } as const
