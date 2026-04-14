@@ -32,6 +32,7 @@ interface StudentDashboardProps { user: AuthUser; }
 
 const StudentDashboard = ({ user: authUser }: StudentDashboardProps) => {
   const { toast } = useToast();
+  const { t } = useI18n();
   const [loading, setLoading] = useState(true);
   const [dashData, setDashData] = useState<any>(null);
   const [leaderboard, setLeaderboard] = useState<any[]>([]);
