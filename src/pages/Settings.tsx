@@ -9,7 +9,8 @@ import { untypedTable } from "@/lib/untypedTable";
 import type { AuthUser } from "@/lib/supabaseAuth";
 import { useI18n } from "@/lib/i18n";
 import { useToast } from "@/hooks/use-toast";
-import { SAUDI_UNIVERSITIES, MAJORS_BY_UNI } from "@/lib/leaderboardConstants";
+import { SAUDI_UNIVERSITIES } from "@/lib/leaderboardConstants";
+import { getMajorsForUniversity } from "@/lib/authStore";
 import { User, Save, Upload } from "lucide-react";
 
 interface SettingsProps { user: AuthUser; }
