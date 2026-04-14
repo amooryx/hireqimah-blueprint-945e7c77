@@ -236,30 +236,31 @@ const StudentDashboard = ({ user: authUser }: StudentDashboardProps) => {
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard icon={Target} label="ERS Score" value={ers.total} delay={0} />
-        <StatCard icon={Trophy} label="Rank" value={myRank > 0 ? `#${myRank}` : "—"} delay={0.1} />
-        <StatCard icon={Award} label="Certifications" value={dashData?.certifications?.length || 0} delay={0.2} />
-        <StatCard icon={Briefcase} label="Interviews" value={interviews.length} delay={0.3} />
+        <StatCard icon={Target} label={t("dash.ersScore")} value={ers.total} delay={0} />
+        <StatCard icon={Trophy} label={t("dash.rank")} value={myRank > 0 ? `#${myRank}` : "—"} delay={0.1} />
+        <StatCard icon={Award} label={t("dash.certifications")} value={dashData?.certifications?.length || 0} delay={0.2} />
+        <StatCard icon={Briefcase} label={t("dash.interviews")} value={interviews.length} delay={0.3} />
       </div>
 
       <Tabs defaultValue="ers" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
-          <TabsTrigger value="ers"><Target className="h-4 w-4 mr-1 hidden sm:inline" />ERS</TabsTrigger>
-          <TabsTrigger value="leaderboard"><Trophy className="h-4 w-4 mr-1 hidden sm:inline" />Rank</TabsTrigger>
-          <TabsTrigger value="uploads"><Upload className="h-4 w-4 mr-1 hidden sm:inline" />Docs</TabsTrigger>
-          <TabsTrigger value="opportunities" className="relative">
-            <Briefcase className="h-4 w-4 mr-1 hidden sm:inline" />Opps
+        <TabsList className="grid w-full grid-cols-4 lg:grid-cols-9">
+          <TabsTrigger value="ers"><Target className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.ers")}</TabsTrigger>
+          <TabsTrigger value="leaderboard"><Trophy className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.leaderboard")}</TabsTrigger>
+          <TabsTrigger value="uploads"><Upload className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.docs")}</TabsTrigger>
+          <TabsTrigger value="internships"><GraduationCap className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.internships")}</TabsTrigger>
+          <TabsTrigger value="jobs"><TrendingUp className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.jobs")}</TabsTrigger>
+          <TabsTrigger value="interviews" className="relative">
+            <Send className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.interviewRequests")}
             {interviews.filter(i => i.status === "requested").length > 0 && (
               <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full text-[10px] w-4 h-4 flex items-center justify-center">
                 {interviews.filter(i => i.status === "requested").length}
               </span>
             )}
           </TabsTrigger>
-          <TabsTrigger value="roadmap"><Map className="h-4 w-4 mr-1 hidden sm:inline" />Road</TabsTrigger>
-          <TabsTrigger value="jobs"><TrendingUp className="h-4 w-4 mr-1 hidden sm:inline" />Jobs</TabsTrigger>
-          <TabsTrigger value="skills"><Star className="h-4 w-4 mr-1 hidden sm:inline" />Skills</TabsTrigger>
+          <TabsTrigger value="roadmap"><Map className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.roadmap")}</TabsTrigger>
+          <TabsTrigger value="skills"><Star className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.skills")}</TabsTrigger>
           <TabsTrigger value="notifications" className="relative">
-            <Bell className="h-4 w-4 mr-1 hidden sm:inline" />Alerts
+            <Bell className="h-4 w-4 mr-1 hidden sm:inline" />{t("dash.notifications")}
             {unreadCount > 0 && (
               <span className="absolute -top-1 -right-1 bg-destructive text-destructive-foreground rounded-full text-[10px] w-4 h-4 flex items-center justify-center">
                 {unreadCount}
