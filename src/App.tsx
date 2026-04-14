@@ -28,6 +28,7 @@ import Founders from "./pages/Founders";
 import SecurityStatement from "./pages/SecurityStatement";
 import PublicProfile from "./pages/PublicProfile";
 import PublicLeaderboard from "./pages/PublicLeaderboard";
+import Settings from "./pages/Settings";
 import { getCurrentAuthUser, signOut, type AuthUser, type AppRole } from "@/lib/supabaseAuth";
 
 const queryClient = new QueryClient();

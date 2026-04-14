@@ -487,6 +487,49 @@ const translations: Record<string, Record<Lang, string>> = {
   "uniDash.developing": { en: "Developing (40-59)", ar: "قيد التطوير (٤٠-٥٩)" },
   "uniDash.needsWork": { en: "Needs Work (<40)", ar: "يحتاج عمل (<٤٠)" },
 
+  // ─── Settings ───
+  "settings.title": { en: "Settings", ar: "الإعدادات" },
+  "settings.subtitle": { en: "Manage your profile and preferences", ar: "إدارة ملفك وتفضيلاتك" },
+  "settings.profileInfo": { en: "Profile Information", ar: "معلومات الملف الشخصي" },
+  "settings.changeAvatar": { en: "Change Photo", ar: "تغيير الصورة" },
+  "settings.academicInfo": { en: "Academic Information", ar: "المعلومات الأكاديمية" },
+  "settings.companyInfo": { en: "Company Information", ar: "معلومات الشركة" },
+  "settings.universityInfo": { en: "University Information", ar: "معلومات الجامعة" },
+  "settings.targetRole": { en: "Target Career Role", ar: "الدور المهني المستهدف" },
+  "settings.targetRolePlaceholder": { en: "e.g. Software Engineer", ar: "مثال: مهندس برمجيات" },
+  "settings.saved": { en: "Settings saved successfully", ar: "تم حفظ الإعدادات بنجاح" },
+  "settings.saveFailed": { en: "Failed to save settings", ar: "فشل حفظ الإعدادات" },
+  "settings.avatarUploaded": { en: "Avatar uploaded", ar: "تم رفع الصورة" },
+  "nav.settings": { en: "Settings", ar: "الإعدادات" },
+
+  // ─── Student Dashboard - Internships/Jobs/Interviews ───
+  "dash.internships": { en: "Internships", ar: "التدريب" },
+  "dash.interviewRequests": { en: "Interview Requests", ar: "طلبات المقابلات" },
+  "dash.internal": { en: "Internal", ar: "داخلي" },
+  "dash.external": { en: "External", ar: "خارجي" },
+  "dash.apply": { en: "Apply", ar: "تقديم" },
+  "dash.applied": { en: "Applied", ar: "تم التقديم" },
+  "dash.applyExternally": { en: "Apply Externally", ar: "تقديم خارجي" },
+  "dash.noInternships": { en: "No internships available", ar: "لا توجد فرص تدريب متاحة" },
+  "dash.applicationSent": { en: "Application submitted", ar: "تم تقديم الطلب" },
+  "dash.alreadyApplied": { en: "Already applied", ar: "تم التقديم مسبقاً" },
+  "dash.fetchingJobs": { en: "Fetching live market data…", ar: "جارِ جلب بيانات السوق..." },
+
+  // ─── HR Dashboard - Applications ───
+  "hr.applications": { en: "Applications", ar: "الطلبات" },
+  "hr.applicants": { en: "Applicants", ar: "المتقدمون" },
+  "hr.noApplications": { en: "No applications yet", ar: "لا توجد طلبات بعد" },
+  "hr.jobType": { en: "Type", ar: "النوع" },
+  "hr.internship": { en: "Internship", ar: "تدريب" },
+  "hr.job": { en: "Job", ar: "وظيفة" },
+  "hr.reviewApplication": { en: "Review", ar: "مراجعة" },
+  "hr.applicationStatus": { en: "Status", ar: "الحالة" },
+
+  // ─── Admin/University Oversight ───
+  "admin.applications": { en: "Applications", ar: "الطلبات" },
+  "admin.placements": { en: "Placements", ar: "التوظيف" },
+  "admin.engagement": { en: "Engagement", ar: "التفاعل" },
+
   // ─── Common ───
   "common.required": { en: "Required", ar: "مطلوب" },
   "common.save": { en: "Save", ar: "حفظ" },
