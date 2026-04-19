@@ -675,22 +675,56 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
               <div className="space-y-3">
                 {interviews.map((iv, i) => {
                   const student = candidates.find(c => c.user_id === iv.student_user_id);
+                  const whenLabel = iv.scheduled_at
+                    ? new Date(iv.scheduled_at).toLocaleString(isArabic ? "ar-SA" : "en-US", { dateStyle: "medium", timeStyle: "short" })
+                    : t("interview.notScheduled");
+                  const canSchedule = iv.status === "accepted" || iv.status === "requested" || iv.status === "scheduled";
                   return (
                     <motion.div key={iv.id} className="rounded-lg border p-4"
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }}>
-                      <div className={`flex items-center justify-between gap-3 ${isArabic ? "flex-row-reverse text-right" : ""}`}>
-                        <div>
-                          <div className={`flex items-center gap-2 ${isArabic ? "justify-end" : ""}`}>
+                      <div className={`flex flex-col gap-3 ${isArabic ? "sm:flex-row-reverse sm:items-center text-right" : "sm:flex-row sm:items-center"} sm:justify-between`}>
+                        <div className="flex-1 min-w-0">
+                          <div className={`flex flex-wrap items-center gap-2 ${isArabic ? "justify-end" : ""}`}>
                             <p className="font-medium text-sm">{student?.profiles?.full_name || t("hr.student")}</p>
                             <Badge variant={
                               iv.status === "requested" ? "default" :
+                              iv.status === "scheduled" ? "default" :
                               iv.status === "accepted" ? "secondary" :
                               iv.status === "declined" ? "destructive" : "outline"
                             } className="text-[10px]">{statusLabel(iv.status)}</Badge>
+                            {iv.meeting_provider && (
+                              <Badge variant="outline" className="text-[10px]">{t("interview.viaProvider", { provider: iv.meeting_provider })}</Badge>
+                            )}
                           </div>
-                          <p className="text-xs text-muted-foreground">{iv.job_title || "—"} · {new Date(iv.created_at).toLocaleDateString(isArabic ? "ar-SA" : "en-US")}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{iv.job_title || "—"}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            <Calendar className="h-3 w-3 inline ltr:mr-1 rtl:ml-1" />
+                            {iv.scheduled_at ? `${t("interview.scheduledFor")}: ${whenLabel}` : whenLabel}
+                          </p>
+                          {iv.meeting_url && (
+                            <a href={iv.meeting_url} target="_blank" rel="noopener noreferrer"
+                              className="text-xs text-primary hover:underline break-all inline-flex items-center gap-1 mt-1">
+                              <LinkIcon className="h-3 w-3" />
+                              {iv.meeting_url}
+                            </a>
+                          )}
                         </div>
-                        {student && <p className="font-bold text-primary">{Math.round(student.ers_score || 0)} ERS</p>}
+                        <div className={`flex items-center gap-2 ${isArabic ? "flex-row-reverse" : ""}`}>
+                          {student && <p className="font-bold text-primary text-sm">{Math.round(student.ers_score || 0)} ERS</p>}
+                          {iv.meeting_url && (
+                            <a href={iv.meeting_url} target="_blank" rel="noopener noreferrer">
+                              <Button size="sm" variant="outline">
+                                <Send className="h-4 w-4 ltr:mr-1 rtl:ml-1" />{t("interview.joinMeeting")}
+                              </Button>
+                            </a>
+                          )}
+                          {canSchedule && student && (
+                            <Button size="sm" onClick={() => openInterviewDialog(student, iv)}>
+                              <Calendar className="h-4 w-4 ltr:mr-1 rtl:ml-1" />
+                              {iv.scheduled_at && iv.meeting_url ? t("common.edit") : t("interview.scheduleFromAccepted")}
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </motion.div>
                   );
