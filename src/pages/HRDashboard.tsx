@@ -916,7 +916,7 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
 
       {/* Message Dialog */}
       <Dialog open={!!messageDialog} onOpenChange={() => setMessageDialog(null)}>
-        <DialogContent>
+        <DialogContent dir={dir} className={isArabic ? "text-right" : "text-left"}>
           <DialogHeader>
             <DialogTitle>{t("hr.messageStudent", { name: messageDialog?.profiles?.full_name || t("hr.student") })}</DialogTitle>
             <DialogDescription>{t("hr.messageStudentDesc")}</DialogDescription>
