@@ -863,20 +863,53 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
         </div>
       )}
 
-      {/* Interview Request Dialog */}
-      <Dialog open={!!interviewDialog} onOpenChange={() => setInterviewDialog(null)}>
-        <DialogContent>
+      {/* Interview Schedule Dialog */}
+      <Dialog open={!!interviewDialog} onOpenChange={(open) => { if (!open) closeInterviewDialog(); }}>
+        <DialogContent dir={dir} className={isArabic ? "text-right" : "text-left"}>
           <DialogHeader>
-            <DialogTitle>{t("hr.requestInterviewTitle")}</DialogTitle>
-            <DialogDescription>{t("hr.requestInterviewDesc", { name: interviewDialog?.profiles?.full_name || t("hr.student") })}</DialogDescription>
+            <DialogTitle>{interviewExistingId ? t("interview.schedule") : t("hr.requestInterviewTitle")}</DialogTitle>
+            <DialogDescription>{t("interview.scheduleDesc", { name: interviewDialog?.profiles?.full_name || t("hr.student") })}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <Input placeholder={t("hr.jobTitlePosition")} value={interviewTitle} onChange={e => setInterviewTitle(e.target.value)} maxLength={200} />
-            <Textarea placeholder={t("hr.jobDescNotes")} value={interviewDesc} onChange={e => setInterviewDesc(e.target.value)} maxLength={1000} />
+            <div>
+              <label className="text-xs font-medium block mb-1">{t("interview.jobTitleLabel")}</label>
+              <Input placeholder={t("hr.jobTitlePosition")} value={interviewTitle} onChange={e => setInterviewTitle(e.target.value)} maxLength={200} />
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1">{t("interview.notesLabel")}</label>
+              <Textarea placeholder={t("hr.jobDescNotes")} value={interviewDesc} onChange={e => setInterviewDesc(e.target.value)} maxLength={1000} rows={3} />
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1">{t("interview.dateTimeLabel")}</label>
+              <Input type="datetime-local" value={interviewScheduledAt} onChange={e => setInterviewScheduledAt(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1">{t("interview.providerLabel")}</label>
+              <Select value={interviewProvider} onValueChange={setInterviewProvider}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Google Meet">{t("interview.providerGoogleMeet")}</SelectItem>
+                  <SelectItem value="Zoom">{t("interview.providerZoom")}</SelectItem>
+                  <SelectItem value="Microsoft Teams">{t("interview.providerTeams")}</SelectItem>
+                  <SelectItem value="Other">{t("interview.providerOther")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1">{t("interview.meetingUrlLabel")}</label>
+              <div className={`flex gap-2 ${isArabic ? "flex-row-reverse" : ""}`}>
+                <Input placeholder={t("interview.meetingUrlPlaceholder")} value={interviewMeetingUrl} onChange={e => setInterviewMeetingUrl(e.target.value)} maxLength={500} />
+                <Button type="button" variant="outline" size="sm" onClick={generateMeetLink} className="shrink-0">
+                  <Video className="h-4 w-4 ltr:mr-1 rtl:ml-1" />{t("interview.generateMeetLink")}
+                </Button>
+              </div>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setInterviewDialog(null)}>{t("common.cancel")}</Button>
-            <Button onClick={sendInterviewRequest}><Send className="h-4 w-4 ltr:mr-1 rtl:ml-1" />{t("hr.sendRequest")}</Button>
+            <Button variant="outline" onClick={closeInterviewDialog}>{t("common.cancel")}</Button>
+            <Button onClick={sendInterviewRequest}>
+              <Send className="h-4 w-4 ltr:mr-1 rtl:ml-1" />{t("interview.sendInvite")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
