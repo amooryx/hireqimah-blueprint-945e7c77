@@ -17,7 +17,8 @@ import { useI18n } from "@/lib/i18n";
 import { SAUDI_UNIVERSITIES } from "@/lib/leaderboardConstants";
 import {
   Search, Users, BarChart3, Star, Award, Eye, TrendingUp, Briefcase,
-  CheckCircle, X, ShieldCheck, MessageSquare, Calendar, Bell, Send, Target, Zap
+  CheckCircle, X, ShieldCheck, MessageSquare, Calendar, Bell, Send, Target, Zap,
+  Link as LinkIcon, Video
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -93,10 +94,14 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
   const [viewingProfile, setViewingProfile] = useState<any>(null);
   const [interviewDialog, setInterviewDialog] = useState<any>(null);
   const [interviewTitle, setInterviewTitle] = useState("");
+  const [interviewDesc, setInterviewDesc] = useState("");
+  const [interviewScheduledAt, setInterviewScheduledAt] = useState("");
+  const [interviewProvider, setInterviewProvider] = useState<string>("Google Meet");
+  const [interviewMeetingUrl, setInterviewMeetingUrl] = useState("");
+  const [interviewExistingId, setInterviewExistingId] = useState<string | null>(null);
   const [jobPostings, setJobPostings] = useState<any[]>([]);
   const [showJobForm, setShowJobForm] = useState(false);
   const [jobForm, setJobForm] = useState({ title: "", description: "", location: "Saudi Arabia", sector: "", required_skills: "", min_ers_score: "" });
-  const [interviewDesc, setInterviewDesc] = useState("");
   const [messageDialog, setMessageDialog] = useState<any>(null);
   const [messageText, setMessageText] = useState("");
   const [notifications, setNotifications] = useState<any[]>([]);
@@ -104,6 +109,40 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
   const [smartMatchResults, setSmartMatchResults] = useState<any[] | null>(null);
   const [smartMatchLoading, setSmartMatchLoading] = useState(false);
   const [smartMatchJob, setSmartMatchJob] = useState<any>(null);
+
+  const openInterviewDialog = (student: any, existing?: any) => {
+    setInterviewDialog(student);
+    setInterviewTitle(existing?.job_title || "");
+    setInterviewDesc(existing?.job_description || "");
+    setInterviewProvider(existing?.meeting_provider || "Google Meet");
+    setInterviewMeetingUrl(existing?.meeting_url || "");
+    setInterviewExistingId(existing?.id || null);
+    if (existing?.scheduled_at) {
+      const d = new Date(existing.scheduled_at);
+      const pad = (n: number) => String(n).padStart(2, "0");
+      setInterviewScheduledAt(
+        `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`
+      );
+    } else {
+      setInterviewScheduledAt("");
+    }
+  };
+
+  const closeInterviewDialog = () => {
+    setInterviewDialog(null);
+    setInterviewTitle("");
+    setInterviewDesc("");
+    setInterviewScheduledAt("");
+    setInterviewProvider("Google Meet");
+    setInterviewMeetingUrl("");
+    setInterviewExistingId(null);
+  };
+
+  const generateMeetLink = () => {
+    const seg = (n: number) => Array.from({ length: n }, () => "abcdefghijklmnopqrstuvwxyz"[Math.floor(Math.random() * 26)]).join("");
+    setInterviewMeetingUrl(`https://meet.google.com/${seg(3)}-${seg(4)}-${seg(3)}`);
+    setInterviewProvider("Google Meet");
+  };
 
   const stageLabel = (stage: string) => {
     const map: Record<string, string> = {
@@ -119,6 +158,7 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
   const statusLabel = (status: string) => {
     const map: Record<string, string> = {
       requested: t("dash.statusRequested"),
+      scheduled: t("interview.scheduledFor"),
       accepted: t("dash.statusAccepted"),
       declined: t("dash.statusDeclined"),
     };
@@ -230,30 +270,71 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
 
   const sendInterviewRequest = async () => {
     if (!interviewDialog) return;
-    await untypedTable("interview_requests").insert({
+
+    // Validate scheduled_at if provided
+    let scheduledIso: string | null = null;
+    if (interviewScheduledAt) {
+      const d = new Date(interviewScheduledAt);
+      if (isNaN(d.getTime())) { toast({ title: t("interview.dateTimeRequired"), variant: "destructive" }); return; }
+      scheduledIso = d.toISOString();
+    }
+
+    // Validate URL if provided
+    if (interviewMeetingUrl) {
+      try {
+        const u = new URL(interviewMeetingUrl);
+        if (!["http:", "https:"].includes(u.protocol)) throw new Error("invalid");
+      } catch {
+        toast({ title: t("interview.invalidUrl"), variant: "destructive" });
+        return;
+      }
+    }
+
+    const payload: any = {
       hr_user_id: authUser.id,
       student_user_id: interviewDialog.user_id,
       job_title: interviewTitle || t("hr.requestInterview"),
       job_description: interviewDesc || null,
-      status: "requested",
-    });
+      meeting_url: interviewMeetingUrl || null,
+      meeting_provider: interviewMeetingUrl ? interviewProvider : null,
+      scheduled_at: scheduledIso,
+      status: scheduledIso && interviewMeetingUrl ? "scheduled" : "requested",
+    };
+
+    let id = interviewExistingId;
+    if (id) {
+      await untypedTable("interview_requests").update({ ...payload, updated_at: new Date().toISOString() }).eq("id", id);
+    } else {
+      const { data: inserted } = await untypedTable("interview_requests").insert(payload).select("id").single();
+      id = (inserted as any)?.id || null;
+    }
+
+    const whenLabel = scheduledIso
+      ? new Date(scheduledIso).toLocaleString(isArabic ? "ar-SA" : "en-US", { dateStyle: "medium", timeStyle: "short" })
+      : t("interview.notScheduled");
+
     await untypedTable("notifications").insert({
       user_id: interviewDialog.user_id,
-      type: "interview_request",
-      title: t("hr.newInterviewRequest"),
-      body: `${hrProfile?.company_name || t("hr.companies")} ${isArabic ? `تريد مقابلتك لوظيفة "${interviewTitle || ""}"` : `wants to interview you for "${interviewTitle || "a position"}".`}`,
+      type: scheduledIso ? "interview_scheduled" : "interview_request",
+      title: scheduledIso ? t("interview.notifyTitle") : t("hr.newInterviewRequest"),
+      body: t("interview.notifyBody", {
+        company: hrProfile?.company_name || t("hr.companies"),
+        title: interviewTitle || "",
+        when: whenLabel,
+      }),
     });
     await supabase.from("audit_logs").insert({
       user_id: authUser.id,
-      action: "interview_requested",
+      action: scheduledIso ? "interview_scheduled" : "interview_requested",
       resource_type: "student",
       resource_id: interviewDialog.user_id,
-      details: { student_name: interviewDialog.profiles?.full_name, job_title: interviewTitle },
+      details: { student_name: interviewDialog.profiles?.full_name, job_title: interviewTitle, scheduled_at: scheduledIso, meeting_provider: interviewProvider },
     });
-    toast({ title: t("hr.interviewSent") });
-    setInterviewDialog(null);
-    setInterviewTitle("");
-    setInterviewDesc("");
+    toast({
+      title: scheduledIso ? t("interview.inviteSent") : t("hr.interviewSent"),
+      description: t("interview.studentNotified", { name: interviewDialog.profiles?.full_name || "" }),
+    });
+    closeInterviewDialog();
     loadDashboard();
   };
 
@@ -425,7 +506,7 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
                       <Button size="sm" variant="outline" onClick={() => setViewingProfile(s)}>
                         <Eye className="h-4 w-4" />
                       </Button>
-                      <Button size="sm" variant="outline" onClick={() => setInterviewDialog(s)}>
+                      <Button size="sm" variant="outline" onClick={() => openInterviewDialog(s)}>
                         <Calendar className="h-4 w-4" />
                       </Button>
                       <Button size="sm" variant="outline" onClick={() => setMessageDialog(s)}>
@@ -516,7 +597,7 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
                         <p className="text-xs text-muted-foreground">{student.university} · {student.major}</p>
                       </div>
                       <p className="font-bold text-primary">{Math.round(student.ers_score || 0)} ERS</p>
-                      <Button size="sm" variant="outline" onClick={() => setInterviewDialog(student)}><Calendar className="h-4 w-4" /></Button>
+                      <Button size="sm" variant="outline" onClick={() => openInterviewDialog(student)}><Calendar className="h-4 w-4" /></Button>
                       <Button size="sm" variant="outline" onClick={() => setMessageDialog(student)}><MessageSquare className="h-4 w-4" /></Button>
                       <Button size="sm" variant="ghost" onClick={() => handleShortlist(sl.student_user_id)}><X className="h-4 w-4" /></Button>
                     </motion.div>
@@ -595,22 +676,56 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
               <div className="space-y-3">
                 {interviews.map((iv, i) => {
                   const student = candidates.find(c => c.user_id === iv.student_user_id);
+                  const whenLabel = iv.scheduled_at
+                    ? new Date(iv.scheduled_at).toLocaleString(isArabic ? "ar-SA" : "en-US", { dateStyle: "medium", timeStyle: "short" })
+                    : t("interview.notScheduled");
+                  const canSchedule = iv.status === "accepted" || iv.status === "requested" || iv.status === "scheduled";
                   return (
                     <motion.div key={iv.id} className="rounded-lg border p-4"
                       initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.05 }}>
-                      <div className={`flex items-center justify-between gap-3 ${isArabic ? "flex-row-reverse text-right" : ""}`}>
-                        <div>
-                          <div className={`flex items-center gap-2 ${isArabic ? "justify-end" : ""}`}>
+                      <div className={`flex flex-col gap-3 ${isArabic ? "sm:flex-row-reverse sm:items-center text-right" : "sm:flex-row sm:items-center"} sm:justify-between`}>
+                        <div className="flex-1 min-w-0">
+                          <div className={`flex flex-wrap items-center gap-2 ${isArabic ? "justify-end" : ""}`}>
                             <p className="font-medium text-sm">{student?.profiles?.full_name || t("hr.student")}</p>
                             <Badge variant={
                               iv.status === "requested" ? "default" :
+                              iv.status === "scheduled" ? "default" :
                               iv.status === "accepted" ? "secondary" :
                               iv.status === "declined" ? "destructive" : "outline"
                             } className="text-[10px]">{statusLabel(iv.status)}</Badge>
+                            {iv.meeting_provider && (
+                              <Badge variant="outline" className="text-[10px]">{t("interview.viaProvider", { provider: iv.meeting_provider })}</Badge>
+                            )}
                           </div>
-                          <p className="text-xs text-muted-foreground">{iv.job_title || "—"} · {new Date(iv.created_at).toLocaleDateString(isArabic ? "ar-SA" : "en-US")}</p>
+                          <p className="text-xs text-muted-foreground mt-1">{iv.job_title || "—"}</p>
+                          <p className="text-xs text-muted-foreground mt-1">
+                            <Calendar className="h-3 w-3 inline ltr:mr-1 rtl:ml-1" />
+                            {iv.scheduled_at ? `${t("interview.scheduledFor")}: ${whenLabel}` : whenLabel}
+                          </p>
+                          {iv.meeting_url && (
+                            <a href={iv.meeting_url} target="_blank" rel="noopener noreferrer"
+                              className="text-xs text-primary hover:underline break-all inline-flex items-center gap-1 mt-1">
+                              <LinkIcon className="h-3 w-3" />
+                              {iv.meeting_url}
+                            </a>
+                          )}
                         </div>
-                        {student && <p className="font-bold text-primary">{Math.round(student.ers_score || 0)} ERS</p>}
+                        <div className={`flex items-center gap-2 ${isArabic ? "flex-row-reverse" : ""}`}>
+                          {student && <p className="font-bold text-primary text-sm">{Math.round(student.ers_score || 0)} ERS</p>}
+                          {iv.meeting_url && (
+                            <a href={iv.meeting_url} target="_blank" rel="noopener noreferrer">
+                              <Button size="sm" variant="outline">
+                                <Send className="h-4 w-4 ltr:mr-1 rtl:ml-1" />{t("interview.joinMeeting")}
+                              </Button>
+                            </a>
+                          )}
+                          {canSchedule && student && (
+                            <Button size="sm" onClick={() => openInterviewDialog(student, iv)}>
+                              <Calendar className="h-4 w-4 ltr:mr-1 rtl:ml-1" />
+                              {iv.scheduled_at && iv.meeting_url ? t("common.edit") : t("interview.scheduleFromAccepted")}
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </motion.div>
                   );
@@ -736,7 +851,7 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
                 ))}
               </div>
               <div className="flex gap-2">
-                <Button className="flex-1" onClick={() => { setViewingProfile(null); setInterviewDialog(viewingProfile); }}>
+                <Button className="flex-1" onClick={() => { const s = viewingProfile; setViewingProfile(null); openInterviewDialog(s); }}>
                   <Calendar className="h-4 w-4 ltr:mr-1 rtl:ml-1" />{t("hr.requestInterview")}
                 </Button>
                 <Button variant="outline" className="flex-1" onClick={() => { setViewingProfile(null); setMessageDialog(viewingProfile); }}>
@@ -748,27 +863,60 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
         </div>
       )}
 
-      {/* Interview Request Dialog */}
-      <Dialog open={!!interviewDialog} onOpenChange={() => setInterviewDialog(null)}>
-        <DialogContent>
+      {/* Interview Schedule Dialog */}
+      <Dialog open={!!interviewDialog} onOpenChange={(open) => { if (!open) closeInterviewDialog(); }}>
+        <DialogContent dir={dir} className={isArabic ? "text-right" : "text-left"}>
           <DialogHeader>
-            <DialogTitle>{t("hr.requestInterviewTitle")}</DialogTitle>
-            <DialogDescription>{t("hr.requestInterviewDesc", { name: interviewDialog?.profiles?.full_name || t("hr.student") })}</DialogDescription>
+            <DialogTitle>{interviewExistingId ? t("interview.schedule") : t("hr.requestInterviewTitle")}</DialogTitle>
+            <DialogDescription>{t("interview.scheduleDesc", { name: interviewDialog?.profiles?.full_name || t("hr.student") })}</DialogDescription>
           </DialogHeader>
           <div className="space-y-3">
-            <Input placeholder={t("hr.jobTitlePosition")} value={interviewTitle} onChange={e => setInterviewTitle(e.target.value)} maxLength={200} />
-            <Textarea placeholder={t("hr.jobDescNotes")} value={interviewDesc} onChange={e => setInterviewDesc(e.target.value)} maxLength={1000} />
+            <div>
+              <label className="text-xs font-medium block mb-1">{t("interview.jobTitleLabel")}</label>
+              <Input placeholder={t("hr.jobTitlePosition")} value={interviewTitle} onChange={e => setInterviewTitle(e.target.value)} maxLength={200} />
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1">{t("interview.notesLabel")}</label>
+              <Textarea placeholder={t("hr.jobDescNotes")} value={interviewDesc} onChange={e => setInterviewDesc(e.target.value)} maxLength={1000} rows={3} />
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1">{t("interview.dateTimeLabel")}</label>
+              <Input type="datetime-local" value={interviewScheduledAt} onChange={e => setInterviewScheduledAt(e.target.value)} />
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1">{t("interview.providerLabel")}</label>
+              <Select value={interviewProvider} onValueChange={setInterviewProvider}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Google Meet">{t("interview.providerGoogleMeet")}</SelectItem>
+                  <SelectItem value="Zoom">{t("interview.providerZoom")}</SelectItem>
+                  <SelectItem value="Microsoft Teams">{t("interview.providerTeams")}</SelectItem>
+                  <SelectItem value="Other">{t("interview.providerOther")}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <label className="text-xs font-medium block mb-1">{t("interview.meetingUrlLabel")}</label>
+              <div className={`flex gap-2 ${isArabic ? "flex-row-reverse" : ""}`}>
+                <Input placeholder={t("interview.meetingUrlPlaceholder")} value={interviewMeetingUrl} onChange={e => setInterviewMeetingUrl(e.target.value)} maxLength={500} />
+                <Button type="button" variant="outline" size="sm" onClick={generateMeetLink} className="shrink-0">
+                  <Video className="h-4 w-4 ltr:mr-1 rtl:ml-1" />{t("interview.generateMeetLink")}
+                </Button>
+              </div>
+            </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setInterviewDialog(null)}>{t("common.cancel")}</Button>
-            <Button onClick={sendInterviewRequest}><Send className="h-4 w-4 ltr:mr-1 rtl:ml-1" />{t("hr.sendRequest")}</Button>
+            <Button variant="outline" onClick={closeInterviewDialog}>{t("common.cancel")}</Button>
+            <Button onClick={sendInterviewRequest}>
+              <Send className="h-4 w-4 ltr:mr-1 rtl:ml-1" />{t("interview.sendInvite")}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       {/* Message Dialog */}
       <Dialog open={!!messageDialog} onOpenChange={() => setMessageDialog(null)}>
-        <DialogContent>
+        <DialogContent dir={dir} className={isArabic ? "text-right" : "text-left"}>
           <DialogHeader>
             <DialogTitle>{t("hr.messageStudent", { name: messageDialog?.profiles?.full_name || t("hr.student") })}</DialogTitle>
             <DialogDescription>{t("hr.messageStudentDesc")}</DialogDescription>
@@ -827,7 +975,7 @@ const HRDashboard = ({ user: authUser }: HRDashboardProps) => {
                     <Button size="sm" variant="outline" onClick={() => { setSmartMatchResults(null); addToPipeline(c.user_id, smartMatchJob?.title); }}>
                       <Target className="h-3 w-3" />
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => { setSmartMatchResults(null); setInterviewDialog({ user_id: c.user_id, profiles: { full_name: c.full_name } }); }}>
+                    <Button size="sm" variant="outline" onClick={() => { setSmartMatchResults(null); openInterviewDialog({ user_id: c.user_id, profiles: { full_name: c.full_name } }); }}>
                       <Calendar className="h-3 w-3" />
                     </Button>
                   </div>
