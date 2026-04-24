@@ -20,12 +20,12 @@ const ImpersonationBanner = () => {
   return (
     <div
       dir={dir}
-      className="sticky top-14 z-40 border-b border-warning/40 bg-warning/15 backdrop-blur"
+      className="sticky top-14 z-40 border-b border-primary/40 bg-primary/10 backdrop-blur"
       role="alert"
     >
       <div className="container flex items-center justify-between gap-3 py-2">
         <div className="flex items-center gap-2 text-xs sm:text-sm">
-          <ShieldAlert className="h-4 w-4 text-warning shrink-0" />
+          <ShieldAlert className="h-4 w-4 text-primary shrink-0" />
           <span className="font-medium">
             {t("imp.viewingAs", {
               name: effectiveUser.full_name,
