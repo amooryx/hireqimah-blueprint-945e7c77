@@ -29,6 +29,20 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
 
+      {/* Floating Dashboard pill — only when signed in (navbar is hidden on home) */}
+      {effectiveUser && (
+        <div dir={dir} className="fixed top-4 ltr:right-4 rtl:left-4 z-50">
+          <Button
+            size="sm"
+            className="h-9 shadow-lg gap-1.5 text-xs font-semibold"
+            onClick={() => navigate(getDashboardPath(effectiveUser.role))}
+          >
+            <LayoutDashboard className="h-3.5 w-3.5" />
+            {t("home.goToDashboard")}
+          </Button>
+        </div>
+      )}
+
       {/* ───────── HERO ───────── */}
       <section className="relative overflow-hidden">
         <div className="absolute inset-0">
