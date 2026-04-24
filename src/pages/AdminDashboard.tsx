@@ -1,13 +1,18 @@
 import { useState, useEffect, useCallback } from "react";
+import { useNavigate } from "react-router-dom";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import StatCard from "@/components/StatCard";
 import { supabase } from "@/integrations/supabase/client";
-import type { AuthUser } from "@/lib/supabaseAuth";
+import type { AuthUser, AppRole } from "@/lib/supabaseAuth";
+import { getDashboardPath } from "@/lib/supabaseAuth";
 import { useI18n } from "@/lib/i18n";
+import { useImpersonation } from "@/lib/impersonation";
 import {
-  Users, BarChart3, Activity, TrendingUp, Briefcase
+  Users, BarChart3, Activity, TrendingUp, Briefcase, LogIn
 } from "lucide-react";
 import MarketIntelligenceDashboard from "@/components/MarketIntelligenceDashboard";
 
