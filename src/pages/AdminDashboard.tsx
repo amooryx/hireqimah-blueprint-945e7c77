@@ -21,11 +21,30 @@ interface AdminDashboardProps { user: AuthUser; }
 const AdminDashboard = ({ user: authUser }: AdminDashboardProps) => {
   const { t, lang, dir } = useI18n();
   const isArabic = lang === "ar";
+  const navigate = useNavigate();
+  const { startImpersonation } = useImpersonation();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ users: 0, students: 0, hrUsers: 0, universities: 0, auditCount: 0 });
   const [auditLogs, setAuditLogs] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [roles, setRoles] = useState<any[]>([]);
+
+  const handleImpersonate = async (s: any) => {
+    const userRoleRow = roles.find((r: any) => r.user_id === s.user_id);
+    const role = (userRoleRow?.role as AppRole) || "student";
+    try {
+      await startImpersonation({
+        userId: s.user_id,
+        role,
+        fullName: s.profiles?.full_name || s.profiles?.email || "User",
+        email: s.profiles?.email || "",
+      });
+      toast.success(t("imp.started", { name: s.profiles?.full_name || "" }));
+      navigate(getDashboardPath(role));
+    } catch (e: any) {
+      toast.error(e?.message || t("imp.onlyAdmin"));
+    }
+  };
 
   const loadDashboard = useCallback(async () => {
     const [
@@ -37,7 +56,7 @@ const AdminDashboard = ({ user: authUser }: AdminDashboardProps) => {
       supabase.from("profiles").select("*", { count: "exact", head: true }),
       supabase.from("student_profiles").select("*, profiles!inner(full_name, email, user_id)").order("ers_score", { ascending: false }).limit(100),
       supabase.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(50),
-      supabase.from("user_roles").select("role"),
+      supabase.from("user_roles").select("user_id, role"),
     ]);
 
     const roleCounts = (rolesData || []).reduce((acc: Record<string, number>, r: any) => {
