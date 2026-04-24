@@ -192,6 +192,16 @@ const AdminDashboard = ({ user: authUser }: AdminDashboardProps) => {
                     <p className="text-xs text-muted-foreground">{s.university} · {s.major}</p>
                   </div>
                   <p className="font-bold text-primary">{Math.round(s.ers_score || 0)}</p>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="h-8 text-xs gap-1.5 shrink-0"
+                    onClick={() => handleImpersonate(s)}
+                    title={t("imp.loginAs")}
+                  >
+                    <LogIn className="h-3.5 w-3.5" />
+                    <span className="hidden sm:inline">{t("imp.loginAs")}</span>
+                  </Button>
                 </div>
               ))}
             </div>
