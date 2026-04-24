@@ -899,6 +899,21 @@ const translations: Record<string, Record<Lang, string>> = {
   "common.noData": { en: "No data available", ar: "لا توجد بيانات" },
   "common.viewAll": { en: "View All", ar: "عرض الكل" },
   "common.notAvailable": { en: "Not available", ar: "غير متاح" },
+
+  // ─── Roles (admin label, used in impersonation banner) ───
+  "role.admin": { en: "Admin", ar: "مشرف" },
+
+  // ─── Impersonation ───
+  "imp.viewingAs": { en: "Viewing as {name} ({role})", ar: "تصفح بهوية {name} ({role})" },
+  "imp.realAs": { en: "Signed in as {name}", ar: "مسجّل دخول كـ {name}" },
+  "imp.exit": { en: "Exit Impersonation", ar: "إنهاء التصفح بهوية أخرى" },
+  "imp.loginAs": { en: "Login as user", ar: "الدخول بهوية المستخدم" },
+  "imp.started": { en: "Impersonating {name}", ar: "تم التصفح بهوية {name}" },
+  "imp.onlyAdmin": { en: "Only admins can use Login As", ar: "هذه الخاصية للمشرفين فقط" },
+
+  // ─── Home page (signed-in) ───
+  "home.signedInBanner": { en: "You are signed in.", ar: "أنت مسجّل دخول." },
+  "home.goToDashboard": { en: "Go to Dashboard", ar: "الذهاب إلى لوحة التحكم" },
 };
 
 const I18nContext = createContext<I18nContextType | null>(null);

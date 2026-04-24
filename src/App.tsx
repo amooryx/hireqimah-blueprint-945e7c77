@@ -8,6 +8,8 @@ import { ThemeProvider } from "@/lib/theme";
 import { I18nProvider } from "@/lib/i18n";
 import { supabase } from "@/integrations/supabase/client";
 import Navbar from "@/components/Navbar";
+import ImpersonationBanner from "@/components/ImpersonationBanner";
+import { ImpersonationProvider, useImpersonation } from "@/lib/impersonation";
 import Index from "./pages/Index";
 import RoleLogin from "./pages/RoleLogin";
 import SignUp from "./pages/SignUp";
@@ -29,7 +31,7 @@ import SecurityStatement from "./pages/SecurityStatement";
 import PublicProfile from "./pages/PublicProfile";
 import PublicLeaderboard from "./pages/PublicLeaderboard";
 import Settings from "./pages/Settings";
-import { getCurrentAuthUser, signOut, type AuthUser, type AppRole } from "@/lib/supabaseAuth";
+import { getCurrentAuthUser, signOut, type AuthUser } from "@/lib/supabaseAuth";
 
 const queryClient = new QueryClient();
 
@@ -49,6 +51,76 @@ const ScrollToHash = () => {
   return null;
 };
 
+interface AppRoutesProps {
+  realUser: AuthUser | null;
+  onLogout: () => void;
+  onLogin: () => void;
+}
+
+// Inner routes — uses impersonation context for effective role
+const AppRoutes = ({ realUser, onLogout, onLogin }: AppRoutesProps) => {
+  const location = useLocation();
+  const { effectiveUser } = useImpersonation();
+  const role = effectiveUser?.role ?? null;
+
+  // Public-style routes where the dashboard navbar should NOT appear
+  // even when the user is signed in. Home + marketing pages stay clean.
+  const publicLayoutPaths = ["/", "/about", "/founders", "/contact", "/privacy", "/terms", "/security", "/leaderboard"];
+  const isPublicPath =
+    publicLayoutPaths.includes(location.pathname) ||
+    location.pathname.startsWith("/profile/");
+
+  // Show navbar only when NOT on a public marketing path while signed in.
+  // Always show it on auth pages and dashboards.
+  const showNavbar = !(realUser && isPublicPath);
+
+  return (
+    <>
+      {showNavbar && <Navbar user={effectiveUser} onLogout={onLogout} />}
+      <ImpersonationBanner />
+      <Routes>
+        <Route path="/" element={<Index />} />
+        <Route path="/auth/select-role" element={<RoleSelect />} />
+        <Route path="/login" element={<Navigate to="/auth/select-role?mode=signin" />} />
+        <Route path="/login/student" element={realUser ? <Navigate to={`/${role}`} /> : <RoleLogin role="student" onLogin={onLogin} />} />
+        <Route path="/login/hr" element={realUser ? <Navigate to={`/${role}`} /> : <RoleLogin role="hr" onLogin={onLogin} />} />
+        <Route path="/login/university" element={realUser ? <Navigate to={`/${role}`} /> : <RoleLogin role="university" onLogin={onLogin} />} />
+        <Route path="/admin/login" element={realUser ? <Navigate to={`/${role}`} /> : <RoleLogin role="admin" onLogin={onLogin} />} />
+        <Route path="/signup" element={<SignUp currentUser={realUser} onLogout={onLogout} />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
+        <Route
+          path="/student"
+          element={role === "student" ? <StudentDashboard user={effectiveUser!} /> : effectiveUser ? <AccessDenied /> : <Navigate to="/login/student" />}
+        />
+        <Route
+          path="/hr"
+          element={role === "hr" ? <HRDashboard user={effectiveUser!} /> : effectiveUser ? <AccessDenied /> : <Navigate to="/login/hr" />}
+        />
+        <Route
+          path="/university"
+          element={role === "university" ? <UniversityDashboard user={effectiveUser!} /> : effectiveUser ? <AccessDenied /> : <Navigate to="/login/university" />}
+        />
+        <Route
+          path="/admin"
+          element={role === "admin" ? <AdminDashboard user={effectiveUser!} /> : effectiveUser ? <AccessDenied /> : <Navigate to="/admin/login" />}
+        />
+        <Route path="/settings" element={effectiveUser ? <Settings user={effectiveUser} /> : <Navigate to="/auth/select-role?mode=signin" />} />
+        <Route path="/profile/:userId" element={<PublicProfile />} />
+        <Route path="/leaderboard" element={<PublicLeaderboard />} />
+        <Route path="/privacy" element={<Privacy />} />
+        <Route path="/terms" element={<Terms />} />
+        <Route path="/contact" element={<Contact />} />
+        <Route path="/about" element={<About />} />
+        <Route path="/founders" element={<Founders />} />
+        <Route path="/security" element={<SecurityStatement />} />
+        <Route path="/access-denied" element={<AccessDenied />} />
+        <Route path="*" element={<NotFound />} />
+      </Routes>
+    </>
+  );
+};
+
 const App = () => {
   const [user, setUser] = useState<AuthUser | null>(null);
   const [checked, setChecked] = useState(false);
@@ -60,10 +132,8 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    // Set up auth listener BEFORE getting session
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user) {
-        // Defer to avoid Supabase client deadlock
         setTimeout(() => loadUser(), 0);
       } else {
         setUser(null);
@@ -119,11 +189,11 @@ const App = () => {
 
   const handleLogin = () => loadUser();
   const handleLogout = async () => {
+    // Clear any impersonation when the real user signs out
+    sessionStorage.removeItem("hq_impersonation_v1");
     await signOut();
     setUser(null);
   };
-
-  const effectiveRole: AppRole | null = user ? user.role : null;
 
   if (!checked) return null;
 
@@ -136,34 +206,9 @@ const App = () => {
             <Sonner />
             <BrowserRouter>
               <ScrollToHash />
-              <Navbar user={user} onLogout={handleLogout} />
-              <Routes>
-                <Route path="/" element={<Index />} />
-                <Route path="/auth/select-role" element={<RoleSelect />} />
-                <Route path="/login" element={<Navigate to="/auth/select-role?mode=signin" />} />
-                <Route path="/login/student" element={user ? <Navigate to={`/${effectiveRole}`} /> : <RoleLogin role="student" onLogin={handleLogin} />} />
-                <Route path="/login/hr" element={user ? <Navigate to={`/${effectiveRole}`} /> : <RoleLogin role="hr" onLogin={handleLogin} />} />
-                <Route path="/login/university" element={user ? <Navigate to={`/${effectiveRole}`} /> : <RoleLogin role="university" onLogin={handleLogin} />} />
-                <Route path="/admin/login" element={user ? <Navigate to={`/${effectiveRole}`} /> : <RoleLogin role="admin" onLogin={handleLogin} />} />
-                <Route path="/signup" element={<SignUp currentUser={user} onLogout={handleLogout} />} />
-                <Route path="/forgot-password" element={<ForgotPassword />} />
-                <Route path="/reset-password" element={<ResetPassword />} />
-                <Route path="/student" element={effectiveRole === "student" ? <StudentDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/login/student" />} />
-                <Route path="/hr" element={effectiveRole === "hr" ? <HRDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/login/hr" />} />
-                <Route path="/university" element={effectiveRole === "university" ? <UniversityDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/login/university" />} />
-                <Route path="/admin" element={effectiveRole === "admin" ? <AdminDashboard user={user!} /> : user ? <AccessDenied /> : <Navigate to="/admin/login" />} />
-                <Route path="/settings" element={user ? <Settings user={user} /> : <Navigate to="/auth/select-role?mode=signin" />} />
-                <Route path="/profile/:userId" element={<PublicProfile />} />
-                <Route path="/leaderboard" element={<PublicLeaderboard />} />
-                <Route path="/privacy" element={<Privacy />} />
-                <Route path="/terms" element={<Terms />} />
-                <Route path="/contact" element={<Contact />} />
-                <Route path="/about" element={<About />} />
-                <Route path="/founders" element={<Founders />} />
-                <Route path="/security" element={<SecurityStatement />} />
-                <Route path="/access-denied" element={<AccessDenied />} />
-                <Route path="*" element={<NotFound />} />
-              </Routes>
+              <ImpersonationProvider realUser={user}>
+                <AppRoutes realUser={user} onLogin={handleLogin} onLogout={handleLogout} />
+              </ImpersonationProvider>
             </BrowserRouter>
           </TooltipProvider>
         </QueryClientProvider>

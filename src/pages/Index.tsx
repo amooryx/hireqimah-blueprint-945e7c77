@@ -5,12 +5,14 @@ import {
   GraduationCap, Building2, University, BarChart3,
   ArrowRight, Trophy, TrendingUp, Globe, Shield,
   FileCheck, Compass, Award, Target, Users, BookOpen,
-  ChevronRight,
+  ChevronRight, LayoutDashboard,
 } from "lucide-react";
 import heroBg from "@/assets/hero-bg.jpg";
 import logo from "@/assets/hireqimah-logo.png";
 import { useI18n } from "@/lib/i18n";
 import Footer from "@/components/Footer";
+import { useImpersonation } from "@/lib/impersonation";
+import { getDashboardPath } from "@/lib/supabaseAuth";
 
 const fadeUp = {
   initial: { opacity: 0, y: 16 },
@@ -21,10 +23,25 @@ const fadeUp = {
 
 const Index = () => {
   const navigate = useNavigate();
-  const { t } = useI18n();
+  const { t, dir } = useI18n();
+  const { effectiveUser } = useImpersonation();
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
+
+      {/* Floating Dashboard pill — only when signed in (navbar is hidden on home) */}
+      {effectiveUser && (
+        <div dir={dir} className="fixed top-4 ltr:right-4 rtl:left-4 z-50">
+          <Button
+            size="sm"
+            className="h-9 shadow-lg gap-1.5 text-xs font-semibold"
+            onClick={() => navigate(getDashboardPath(effectiveUser.role))}
+          >
+            <LayoutDashboard className="h-3.5 w-3.5" />
+            {t("home.goToDashboard")}
+          </Button>
+        </div>
+      )}
 
       {/* ───────── HERO ───────── */}
       <section className="relative overflow-hidden">
